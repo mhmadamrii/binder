@@ -8,6 +8,10 @@ import {
 import { posts } from "~/server/db/schema";
 
 export const postRouter = createTRPCRouter({
+  getAllPosts: publicProcedure.query(async ({ ctx }) => {
+    const allPosts = await ctx.db.select().from(posts);
+    return allPosts;
+  }),
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {
