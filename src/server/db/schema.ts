@@ -1,6 +1,16 @@
-import { relations, sql } from "drizzle-orm";
-import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
+import { relations, sql } from "drizzle-orm";
+import {
+  index,
+  integer,
+  pgTable,
+  pgTableCreator,
+  primaryKey,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -49,9 +59,15 @@ export const users = createTable("user", (d) => ({
   image: d.varchar({ length: 255 }),
 }));
 
-export const usersRelations = relations(users, ({ many }) => ({
-  accounts: many(accounts),
-}));
+export const verificationTokens = createTable(
+  "verification_token",
+  (d) => ({
+    identifier: d.varchar({ length: 255 }).notNull(),
+    token: d.varchar({ length: 255 }).notNull(),
+    expires: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
+  }),
+  (t) => [primaryKey({ columns: [t.identifier, t.token] })],
+);
 
 export const accounts = createTable(
   "account",
@@ -77,10 +93,6 @@ export const accounts = createTable(
   ],
 );
 
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, { fields: [accounts.userId], references: [users.id] }),
-}));
-
 export const sessions = createTable(
   "session",
   (d) => ({
@@ -94,16 +106,69 @@ export const sessions = createTable(
   (t) => [index("t_user_id_idx").on(t.userId)],
 );
 
+export const groups = createTable("groups", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  ownerId: varchar("owner_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const groupMembers = createTable("group_members", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id")
+    .references(() => groups.id)
+    .notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+});
+
+export const messages = createTable("messages", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id")
+    .references(() => groups.id)
+    .notNull(),
+  senderId: varchar("sender_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const notes = createTable("notes", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id")
+    .references(() => groups.id)
+    .notNull(),
+  authorId: varchar("author_id", { length: 255 })
+    .references(() => users.id)
+    .notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const noteBlocks = createTable("note_blocks", {
+  id: serial("id").primaryKey(),
+  noteId: integer("note_id")
+    .references(() => notes.id)
+    .notNull(),
+  order: integer("order").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, { fields: [sessions.userId], references: [users.id] }),
 }));
 
-export const verificationTokens = createTable(
-  "verification_token",
-  (d) => ({
-    identifier: d.varchar({ length: 255 }).notNull(),
-    token: d.varchar({ length: 255 }).notNull(),
-    expires: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
-  }),
-  (t) => [primaryKey({ columns: [t.identifier, t.token] })],
-);
+export const usersRelations = relations(users, ({ many }) => ({
+  accounts: many(accounts),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, { fields: [accounts.userId], references: [users.id] }),
+}));
