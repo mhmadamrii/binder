@@ -1,4 +1,7 @@
+"use client";
+
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -28,24 +31,10 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    setTimeout(() => {
-      toast.success("Welcome to Binder!");
-      setIsLoading(false);
-      onOpenChange(false);
-      router.push("/groups");
-    }, 1000);
   };
 
   const handleDiscordLogin = () => {
     setIsLoading(true);
-    // Simulate Discord login
-    setTimeout(() => {
-      toast.success("Logged in with Discord!");
-      setIsLoading(false);
-      onOpenChange(false);
-      router.push("/groups");
-    }, 1000);
   };
 
   return (
@@ -115,7 +104,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         </div>
 
         <Button
-          onClick={handleDiscordLogin}
+          onClick={() => signIn("discord")}
           variant="outline"
           className="border-border hover:bg-secondary hover:text-secondary-foreground w-full"
           disabled={isLoading}

@@ -1,11 +1,17 @@
-import { Button } from "~/components/ui/button";
-import { useRouter } from "next/navigation";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import { Users, Hash, FileText } from "lucide-react";
+"use client";
+
 import { toast } from "sonner";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Loader } from "lucide-react";
+import { api } from "~/trpc/react";
+import { useForm } from "react-hook-form";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
+import { Switch } from "~/components/ui/switch";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "~/components/ui/button";
+
 import {
   Dialog,
   DialogContent,
@@ -13,46 +19,59 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+
 interface CreateGroupModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const formSchema = z.object({
+  name: z.string().min(1),
+  desc: z.string(),
+  is_private: z.boolean(),
+});
+
 export function CreateGroup({ open, onOpenChange }: CreateGroupModalProps) {
   const router = useRouter();
-  const [groupName, setGroupName] = useState("");
-  const [description, setDescription] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      desc: "",
+      is_private: false,
+    },
+  });
 
-  const handleCreateGroup = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const { mutate, isPending } = api.group.createGroup.useMutation({
+    onSuccess: (res) => {
+      toast.success("Group created successfully!");
+      router.push(`/groups/${res[0]!.id}`);
+    },
+  });
 
-    if (!groupName.trim()) {
-      toast.error("Group name is required!");
-      return;
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      mutate({
+        name: values.name,
+        description: values.desc,
+        isPrivate: values.is_private,
+      });
+    } catch (error) {
+      console.error("Form submission error", error);
+      toast.error("Failed to submit the form. Please try again.");
     }
-
-    setIsLoading(true);
-
-    // Simulate group creation
-    setTimeout(() => {
-      const groupId = Math.random().toString(36).substr(2, 9);
-      toast.success(`Group "${groupName}" created successfully!`);
-      setIsLoading(false);
-      onOpenChange(false);
-
-      // Reset form
-      setGroupName("");
-      setDescription("");
-
-      // Redirect to the group message page
-      router.push("/");
-    }, 1000);
-  };
+  }
 
   const handleClose = () => {
-    setGroupName("");
-    setDescription("");
     onOpenChange(false);
   };
 
@@ -65,79 +84,79 @@ export function CreateGroup({ open, onOpenChange }: CreateGroupModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleCreateGroup} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="groupName" className="text-foreground">
-              Group Name
-            </Label>
-            <div className="relative">
-              <Hash className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
-              <Input
-                id="groupName"
-                type="text"
-                placeholder="Enter group name"
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-                className="bg-input border-border focus:ring-ring pl-10"
-                maxLength={50}
-                required
-              />
-            </div>
-            <p className="text-muted-foreground text-xs">
-              {groupName.length}/50 characters
-            </p>
-          </div>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mx-auto max-w-3xl space-y-8 py-10"
+          >
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Group Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      placeholder="Enter group name"
+                      type=""
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-foreground">
-              Description (Optional)
-            </Label>
-            <div className="relative">
-              <FileText className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
-              <Textarea
-                id="description"
-                placeholder="What's this group about?"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="bg-input border-border focus:ring-ring resize-none pl-10"
-                rows={3}
-                maxLength={200}
-              />
-            </div>
-            <p className="text-muted-foreground text-xs">
-              {description.length}/200 characters
-            </p>
-          </div>
+            <FormField
+              control={form.control}
+              name="desc"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      disabled={isPending}
+                      placeholder="What's your group about?"
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="bg-secondary/30 border-border flex items-center rounded-lg border p-3">
-            <Users className="text-primary mr-2 h-4 w-4" />
-            <div className="text-sm">
-              <p className="text-foreground font-medium">Group Privacy</p>
-              <p className="text-muted-foreground">
-                Only invited members can join this group
-              </p>
-            </div>
-          </div>
-
-          <div className="flex space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="border-border hover:bg-secondary flex-1"
-              onClick={handleClose}
-              disabled={isLoading}
-            >
-              Cancel
+            <FormField
+              control={form.control}
+              name="is_private"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel>Private Group</FormLabel>
+                    <FormDescription>
+                      Make your group private and only accept invited members
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-readonly
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button className="w-full cursor-pointer" type="submit">
+              {isPending ? (
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Create Group"
+              )}
             </Button>
-            <Button
-              type="submit"
-              className="btn-hero flex-1 font-semibold"
-              disabled={isLoading || !groupName.trim()}
-            >
-              {isLoading ? "Creating..." : "Create Group"}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

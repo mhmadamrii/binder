@@ -1,9 +1,9 @@
 import { type AdapterAccount } from "next-auth/adapters";
 import { relations, sql } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
-  pgTable,
   pgTableCreator,
   primaryKey,
   serial,
@@ -49,7 +49,7 @@ export const users = createTable("user", (d) => ({
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }),
   email: d.varchar({ length: 255 }).notNull(),
-  password: d.varchar({ length: 255 }).notNull(),
+  password: d.varchar({ length: 255 }),
   emailVerified: d
     .timestamp({
       mode: "date",
@@ -109,6 +109,8 @@ export const sessions = createTable(
 export const groups = createTable("groups", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
+  desc: varchar("desc", { length: 255 }).notNull(),
+  isPrivate: boolean("is_private").default(false).notNull(),
   ownerId: varchar("owner_id", { length: 255 })
     .references(() => users.id)
     .notNull(),

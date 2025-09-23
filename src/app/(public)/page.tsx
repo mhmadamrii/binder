@@ -1,12 +1,14 @@
-"use client";
-
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
 import { MessageCircle, Shield, Users, Zap } from "lucide-react";
-import { LoginModal } from "./_components/login-modal";
+import { CTAButton } from "./_components/cta-button";
+import { auth } from "~/server/auth";
+import { redirect } from "next/navigation";
 
-export default function Public() {
-  const [showLogin, setShowLogin] = useState(false);
+export default async function Public() {
+  const session = await auth();
+
+  if (session?.user) {
+    redirect("/groups");
+  }
 
   return (
     <div className="bg-background min-h-screen">
@@ -19,7 +21,6 @@ export default function Public() {
           />
           <div className="from-background/90 to-background/60 absolute inset-0 bg-gradient-to-br" />
         </div>
-
         <div className="relative z-10 container mx-auto px-4 py-24 text-center">
           <h1 className="from-primary via-primary-glow to-accent mb-6 bg-gradient-to-r bg-clip-text text-6xl font-bold text-transparent md:text-8xl">
             Binder
@@ -28,14 +29,7 @@ export default function Public() {
             Connect, communicate, and collaborate seamlessly with your team in
             one powerful messaging platform
           </p>
-
-          <Button
-            onClick={() => setShowLogin(true)}
-            size="lg"
-            className="btn-hero glow px-8 py-6 text-lg"
-          >
-            Get Started
-          </Button>
+          <CTAButton className="glow px-8 py-6 text-lg">Get Started</CTAButton>
         </div>
       </section>
 
@@ -99,17 +93,11 @@ export default function Public() {
             workflow and boost productivity
           </p>
 
-          <Button
-            onClick={() => setShowLogin(true)}
-            size="lg"
-            className="btn-hero glow px-12 py-6 text-lg"
-          >
+          <CTAButton className="glow px-8 py-6 text-lg">
             Start Messaging Now
-          </Button>
+          </CTAButton>
         </div>
       </section>
-
-      <LoginModal open={showLogin} onOpenChange={setShowLogin} />
     </div>
   );
 }

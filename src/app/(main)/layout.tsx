@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { Header } from "~/components/header";
 import { auth } from "~/server/auth";
 
 export default async function MainLayout({
@@ -7,5 +9,14 @@ export default async function MainLayout({
 }) {
   const session = await auth();
   console.log("session", session);
-  return <main>{children}</main>;
+  if (!session) {
+    redirect("/");
+  }
+
+  return (
+    <main>
+      <Header />
+      {children}
+    </main>
+  );
 }
