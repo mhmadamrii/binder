@@ -10,7 +10,10 @@ export const groupRouter = createTRPCRouter({
   }),
 
   getAllMyGroups: protectedProcedure.query(async ({ ctx }) => {
-    const allPosts = await ctx.db.select().from(groups);
+    const allPosts = await ctx.db
+      .select()
+      .from(groups)
+      .where(eq(groups.ownerId, ctx.session.user.id));
     return allPosts;
   }),
 

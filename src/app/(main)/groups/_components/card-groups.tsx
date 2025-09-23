@@ -4,10 +4,11 @@ import { Users } from "lucide-react";
 import { CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { useRouter } from "next/navigation";
 
 interface CardGroupsProps {
   filteredGroups: Array<{
-    id: number;
+    id: string;
     name: string;
     lastMessage: string;
     timestamp: string;
@@ -17,13 +18,14 @@ interface CardGroupsProps {
 }
 
 export function CardGroups({ filteredGroups }: CardGroupsProps) {
+  const router = useRouter();
   return (
     <CardContent className="flex flex-1 flex-col">
       <ScrollArea className="h-[calc(100vh-280px)]">
         {filteredGroups.map((group) => (
           <div
             key={group.id}
-            onClick={() => console.log("")}
+            onClick={() => router.push(`/group/${group.id}`)}
             className="border-border hover:bg-secondary/50 mb-[10px] cursor-pointer rounded-lg border p-3 transition-colors"
           >
             <div className="mb-1 flex items-center justify-between">
