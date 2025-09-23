@@ -37,6 +37,22 @@ const mockGroups = [
     unread: 5,
     members: 15,
   },
+  {
+    id: 5,
+    name: "HR Team",
+    lastMessage: "New policies have been updated",
+    timestamp: "Yesterday",
+    unread: 0,
+    members: 4,
+  },
+  {
+    id: 6,
+    name: "All Hands",
+    lastMessage: "Company-wide meeting next week",
+    timestamp: "2 days ago",
+    unread: 0,
+    members: 50,
+  },
 ];
 
 export default function Groups() {
@@ -46,7 +62,7 @@ export default function Groups() {
 
   return (
     <div className="bg-background h-[calc(100vh-65px)] border border-red-500">
-      <div className="container mx-auto h-full px-4 py-8">
+      <div className="h-full px-4 py-8">
         <div className="grid h-full gap-5 lg:grid-cols-3">
           <div className="h-full lg:col-span-1">
             <Card className="card-gradient border-border h-full">
