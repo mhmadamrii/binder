@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { groups } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { eq } from "drizzle-orm";
 
 export const groupRouter = createTRPCRouter({
   getAllGroups: protectedProcedure.query(async ({ ctx }) => {
@@ -12,6 +13,17 @@ export const groupRouter = createTRPCRouter({
     const allPosts = await ctx.db.select().from(groups);
     return allPosts;
   }),
+
+  getGroupById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const group = await ctx.db
+        .select()
+        .from(groups)
+        .where(eq(groups.id, input.id))
+        .limit(1);
+      return group;
+    }),
 
   createGroup: protectedProcedure
     .input(

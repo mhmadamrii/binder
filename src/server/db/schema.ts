@@ -9,6 +9,7 @@ import {
   serial,
   text,
   timestamp,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -107,7 +108,9 @@ export const sessions = createTable(
 );
 
 export const groups = createTable("groups", {
-  id: serial("id").primaryKey(),
+  id: uuid("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: varchar("name", { length: 255 }).notNull(),
   desc: varchar("desc", { length: 255 }).notNull(),
   isPrivate: boolean("is_private").default(false).notNull(),
@@ -119,7 +122,7 @@ export const groups = createTable("groups", {
 
 export const groupMembers = createTable("group_members", {
   id: serial("id").primaryKey(),
-  groupId: integer("group_id")
+  groupId: uuid("group_id")
     .references(() => groups.id)
     .notNull(),
   userId: varchar("user_id", { length: 255 })
@@ -130,7 +133,7 @@ export const groupMembers = createTable("group_members", {
 
 export const messages = createTable("messages", {
   id: serial("id").primaryKey(),
-  groupId: integer("group_id")
+  groupId: uuid("group_id")
     .references(() => groups.id)
     .notNull(),
   senderId: varchar("sender_id", { length: 255 })
@@ -142,7 +145,7 @@ export const messages = createTable("messages", {
 
 export const notes = createTable("notes", {
   id: serial("id").primaryKey(),
-  groupId: integer("group_id")
+  groupId: uuid("group_id")
     .references(() => groups.id)
     .notNull(),
   authorId: varchar("author_id", { length: 255 })

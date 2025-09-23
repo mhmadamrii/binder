@@ -13,10 +13,5 @@ export default async function MainLayout({
     redirect("/");
   }
 
-  return (
-    <main>
-      <Header />
-      {children}
-    </main>
-  );
+  return <main>{children}</main>;
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
 import { CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { CreateGroup } from "./create-group";
@@ -14,14 +13,6 @@ export function CardGroupHeader() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-foreground">Your Groups</CardTitle>
-          <Button
-            onClick={() => console.log("")}
-            size="sm"
-            className="btn-hero"
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            New
-          </Button>
         </div>
 
         <div className="relative">
