@@ -152,6 +152,7 @@ export const notes = createTable("notes", {
     .references(() => users.id)
     .notNull(),
   title: varchar("title", { length: 255 }).notNull(),
+  desc: varchar("desc", { length: 255 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

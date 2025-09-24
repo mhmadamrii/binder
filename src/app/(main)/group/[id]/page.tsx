@@ -33,7 +33,7 @@ async function GroupByIdWithData({ id }: { id: string }) {
         </div>
         <div className="flex w-80 flex-col gap-4">
           <ScrollArea className="h-[calc(100vh-8rem)] space-y-4">
-            <GroupNotes />
+            <GroupNotes groupId={id} />
             <GroupMember groupId={id} />
           </ScrollArea>
         </div>
