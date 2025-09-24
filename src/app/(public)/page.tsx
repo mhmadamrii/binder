@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 export default async function Public() {
   const session = await auth();
+  console.log("session public", session);
 
   if (session?.user) {
     redirect("/groups");

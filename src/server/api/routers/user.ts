@@ -1,3 +1,5 @@
+import bcrypt from "bcryptjs";
+
 import { z } from "zod";
 import { users } from "~/server/db/schema";
 import { createTRPCRouter, publicProcedure } from "../trpc";
@@ -12,11 +14,15 @@ export const userRouter = createTRPCRouter({
         password: z.string(),
       }),
     )
-    .query(({ input }) => {
-      return db.insert(users).values({
-        name: input.name,
-        email: input.email,
-        password: input.password,
-      });
+    .mutation(async ({ input }) => {
+      const passHash = await bcrypt.hash(input.password, 10);
+      return await db
+        .insert(users)
+        .values({
+          name: input.name,
+          email: input.email,
+          password: passHash,
+        })
+        .returning({ id: users.id });
     }),
 });

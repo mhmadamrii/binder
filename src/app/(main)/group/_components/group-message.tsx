@@ -1,3 +1,5 @@
+"use client";
+
 import { Paperclip, Send, Smile } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { CardContent } from "~/components/ui/card";
@@ -67,6 +69,7 @@ export function GroupMessage() {
           <Input
             placeholder="Type a message..."
             value=""
+            onChange={() => {}}
             className="bg-input border-border focus:ring-ring flex-1"
           />
           <Button type="button" variant="ghost" size="sm">

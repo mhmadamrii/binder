@@ -1,5 +1,9 @@
+import bcrypt from "bcryptjs";
+
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { redirect } from "next/navigation";
 import { db } from "~/server/db";
+import { eq } from "drizzle-orm";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 
 import DiscordProvider from "next-auth/providers/discord";
@@ -44,26 +48,40 @@ export const authConfig = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: {
-          label: "Email",
-          type: "email",
-        },
-        password: {
-          label: "Password",
-          type: "password",
-        },
+        email: {},
+        password: {},
       },
       async authorize(credentials, req) {
-        console.log("credentials", credentials);
-
-        const user = await db.select().from(users);
-        console.log("user db?", user);
-
-        if (!user) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        return {};
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, credentials.email));
+
+        if (!user) {
+          throw new Error("No user found with the given email");
+        }
+
+        if (!user.password) return null;
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password,
+        );
+
+        if (!isPasswordValid) {
+          console.log("Invalid password");
+          throw new Error("Invalid password");
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        };
       },
     }),
   ],
@@ -74,12 +92,19 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: ({ session, token }) => {
+      if (token && session.user) {
+        session.user.id = token.sub!;
+      }
+      return session;
+    },
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
+  pages: {
+    error: "/",
   },
 } satisfies NextAuthConfig;

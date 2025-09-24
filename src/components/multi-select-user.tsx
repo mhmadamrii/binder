@@ -5,6 +5,7 @@ import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+
 import {
   Command,
   CommandEmpty,
@@ -69,7 +70,7 @@ export function MultiSelectUsers({
   };
 
   return (
-    <div className={cn("w-full", className)}>
+    <section className={cn("w-full", className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -90,7 +91,7 @@ export function MultiSelectUsers({
                     className="h-6 pr-1 text-xs"
                   >
                     <span className="max-w-[120px] truncate">{user.name}</span>
-                    <button
+                    <span
                       className="hover:bg-muted ml-1 rounded-sm p-0.5"
                       onClick={(e) => {
                         e.preventDefault();
@@ -99,7 +100,7 @@ export function MultiSelectUsers({
                       }}
                     >
                       <X className="h-3 w-3" />
-                    </button>
+                    </span>
                   </Badge>
                 ))
               )}
@@ -173,6 +174,6 @@ export function MultiSelectUsers({
           </Command>
         </PopoverContent>
       </Popover>
-    </div>
+    </section>
   );
 }
