@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader, PlusCircle, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { MultiSelectUsers } from "~/components/multi-select-user";
 import { useState } from "react";
 import { api } from "~/trpc/react";
@@ -25,6 +26,7 @@ type User = {
 };
 
 export function GroupMember({ groupId }: { groupId: string }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
@@ -40,6 +42,7 @@ export function GroupMember({ groupId }: { groupId: string }) {
       toast.success("Members added successfully!");
       setIsOpen(false);
       setSelectedUsers([]);
+      router.refresh();
     },
   });
 

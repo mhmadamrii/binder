@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { groupMembers, groups } from "~/server/db/schema";
+import { groupMembers, groups, users } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { eq } from "drizzle-orm";
 
@@ -20,12 +20,27 @@ export const groupRouter = createTRPCRouter({
   getGroupById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const group = await ctx.db
+      const [group] = await ctx.db
         .select()
         .from(groups)
-        .where(eq(groups.id, input.id))
-        .limit(1);
-      return group;
+        .where(eq(groups.id, input.id));
+
+      if (!group) return null;
+
+      const members = await ctx.db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+        })
+        .from(groupMembers)
+        .innerJoin(users, eq(groupMembers.userId, users.id))
+        .where(eq(groupMembers.groupId, input.id));
+
+      return {
+        ...group,
+        members,
+      };
     }),
 
   createGroup: protectedProcedure

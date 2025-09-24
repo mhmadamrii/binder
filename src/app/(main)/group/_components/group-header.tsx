@@ -4,7 +4,15 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, MessageCircle, Settings, Users } from "lucide-react";
 
-export function GroupHeader() {
+export function GroupHeader({
+  groupName,
+  groupDescription,
+  membersCount,
+}: {
+  groupName?: string;
+  groupDescription?: string;
+  membersCount?: number;
+}) {
   return (
     <header className="border-border bg-card/50 border-b backdrop-blur-sm">
       <div className="px-4 py-4">
@@ -26,9 +34,11 @@ export function GroupHeader() {
               </div>
               <div>
                 <h1 className="text-foreground text-xl font-bold">
-                  Binder Group
+                  {groupName || "-"}
                 </h1>
-                <p className="text-muted-foreground text-sm">What the hell</p>
+                <p className="text-muted-foreground text-sm">
+                  {groupDescription}
+                </p>
               </div>
             </div>
           </div>
@@ -38,7 +48,8 @@ export function GroupHeader() {
               variant="secondary"
               className="bg-primary/20 text-primary border-primary/30"
             >
-              <Users className="mr-1 h-3 w-3" />5 members
+              <Users className="mr-1 h-3 w-3" />
+              {membersCount} members
             </Badge>
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4" />

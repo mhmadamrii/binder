@@ -1,6 +1,10 @@
+"use client";
+
 import { MessageCircle, PlusCircle } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 
 export function GroupNotes() {
   return (
@@ -28,6 +32,28 @@ export function GroupNotes() {
             Add First Note
           </Button>
         </div>
+        <form className="bg-card/50 border-border space-y-3 rounded-lg border p-3">
+          <Input
+            placeholder="Note title..."
+            value=""
+            onChange={(e) => {}}
+            className="bg-input border-border"
+          />
+          <Textarea
+            placeholder="Note content..."
+            value=""
+            onChange={(e) => {}}
+            className="bg-input border-border min-h-[100px]"
+          />
+          <div className="flex space-x-2">
+            <Button type="submit" size="sm" className="btn-hero">
+              Save Note
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => {}}>
+              Cancel
+            </Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   );
