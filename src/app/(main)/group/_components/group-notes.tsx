@@ -1,53 +1,47 @@
 "use client";
 
-import { Loader, MessageCircle, PlusCircle } from "lucide-react";
+import Link from "next/link";
+
+import { MessageCircle, PlusCircle } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { NoteCard } from "./note-card";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DialogAddNote } from "./dialog-add-note";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 
 export function GroupNotes({ groupId }: { groupId: string }) {
-  const utils = api.useUtils();
-
   const [isOpenCreateNote, setIsOpenCreateNote] = useState(false);
-  const [note, setNote] = useState({
-    title: "",
-    desc: "",
-  });
 
   const { data: groupNotes } = api.note.getAllGroupNotes.useQuery({
     groupId,
   });
 
-  const { mutate: createNote, isPending } = api.note.createNote.useMutation({
-    onSuccess: () => {
-      setNote({ title: "", desc: "" });
-      utils.invalidate();
-      setIsOpenCreateNote(false);
-      toast.success("Note created successfully");
-    },
-  });
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return;
+    console.log("Dragged:", result.source.index, "→", result.destination.index);
+  };
 
   console.log("groupNotes", groupNotes);
 
   return (
-    <Card className="card-gradient border-border mb-4 min-h-[400px]">
+    <Card className="card-gradient border-border min-h-[400px]">
       <CardHeader>
         <CardTitle className="text-foreground flex items-center justify-between">
           <span>Group Notes</span>
-          <Button
-            onClick={() => setIsOpenCreateNote(true)}
-            size="sm"
-            variant="ghost"
-            className="hover:bg-secondary"
-          >
-            <PlusCircle className="h-4 w-4" />
-          </Button>
+          <DialogAddNote
+            isOpenCreateNote={isOpenCreateNote}
+            setIsOpenCreateNote={setIsOpenCreateNote}
+          />
         </CardTitle>
       </CardHeader>
 
@@ -75,61 +69,59 @@ export function GroupNotes({ groupId }: { groupId: string }) {
             </Button>
           </div>
         )}
-        {groupNotes?.map((item) => (
-          <NoteCard key={item.notes.id} note={item} />
-        ))}
-        <form
-          className={cn("space-y-3 rounded-lg", {
-            hidden: !isOpenCreateNote,
-          })}
-        >
-          <Input
-            placeholder="Note title..."
-            disabled={isPending}
-            value={note.title}
-            onChange={(e) =>
-              setNote((prev) => ({ ...prev, title: e.target.value }))
-            }
-            className="bg-input border-border"
-          />
-          <Textarea
-            placeholder="Note content..."
-            disabled={isPending}
-            value={note.desc}
-            onChange={(e) =>
-              setNote((prev) => ({ ...prev, desc: e.target.value }))
-            }
-            className="bg-input border-border min-h-[100px]"
-          />
-          <div className="flex space-x-2">
-            <Button
-              onClick={() =>
-                createNote({
-                  groupId: groupId,
-                  title: note.title,
-                  desc: note.desc,
-                })
-              }
-              type="button"
-              size="sm"
-              className="w-[100px]"
-            >
-              {isPending ? (
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                "Save Note"
-              )}
-            </Button>
-            <Button
-              onClick={() => setIsOpenCreateNote(false)}
-              type="button"
-              variant="ghost"
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable
+            ignoreContainerClipping
+            isDropDisabled={false}
+            isCombineEnabled
+            droppableId="note-list"
+          >
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="space-y-2"
+              >
+                <ScrollArea
+                  className={cn("h-[calc(100vh-550px)]", {
+                    "h-0": groupNotes?.length == 0,
+                  })}
+                >
+                  {groupNotes?.map((note, index) => (
+                    <Draggable
+                      key={note.notes.id}
+                      draggableId={note.notes.id.toString()}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps} // required
+                          {...provided.dragHandleProps} // if you want whole card draggable
+                          style={provided.draggableProps.style} // required for movement
+                          className={`transition ${
+                            snapshot.isDragging ? "scale-105 shadow-lg" : ""
+                          }`}
+                        >
+                          <NoteCard
+                            note={note}
+                            dragHandleProps={provided.dragHandleProps}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                </ScrollArea>
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+        {groupNotes?.length! > 0 && (
+          <CardFooter className="flex items-center justify-center">
+            <Link href="/groups">see all notes</Link>
+          </CardFooter>
+        )}
       </CardContent>
     </Card>
   );
