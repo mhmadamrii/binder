@@ -1,8 +1,10 @@
 "use client";
 
-import { PlusCircle, Users } from "lucide-react";
+import { Loader, PlusCircle, Users } from "lucide-react";
 import { MultiSelectUsers } from "~/components/multi-select-user";
 import { useState } from "react";
+import { api } from "~/trpc/react";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -17,14 +19,36 @@ import {
 
 type User = {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
-  avatar?: string;
+  avatar: string | null;
 };
 
-export function GroupMember() {
+export function GroupMember({ groupId }: { groupId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+
+  const { data: allMembers, isLoading } = api.user.getAllUsers.useQuery(
+    undefined,
+    {
+      enabled: isOpen,
+    },
+  );
+
+  const { mutate, isPending } = api.group.addMembersToGroup.useMutation({
+    onSuccess: () => {
+      toast.success("Members added successfully!");
+      setIsOpen(false);
+      setSelectedUsers([]);
+    },
+  });
+
+  const handleAddMembers = () => {
+    mutate({
+      userIds: selectedUsers.map((u) => u.id),
+      groupId,
+    });
+  };
 
   const handleSelectMultiUser = (user: User[]) => {
     setSelectedUsers(user);
@@ -54,6 +78,7 @@ export function GroupMember() {
                 value={`https://binder.app/join/3`}
                 readOnly
                 className="bg-secondary/50 border-border text-xs"
+                disabled={isLoading}
               />
               <Button variant="ghost" size="sm" className="hover:bg-secondary">
                 Copy
@@ -69,34 +94,30 @@ export function GroupMember() {
             <DialogTitle>Are you absolutely sure?</DialogTitle>
           </DialogHeader>
           <MultiSelectUsers
+            disabled={isPending || isLoading}
             onSelectionChange={handleSelectMultiUser}
             selectedUsers={selectedUsers}
-            users={[
-              {
-                id: "1",
-                name: "Alice",
-                email: "alice@example.com",
-                avatar:
-                  "https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-              },
-              {
-                id: "2",
-                name: "Bob",
-                email: "bob@example.com",
-                avatar:
-                  "https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-              },
-              {
-                id: "3",
-                name: "Charlie",
-                email: "charlie@example.com",
-                avatar:
-                  "https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-              },
-            ]}
+            users={
+              allMembers?.map((user) => ({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                avatar: user.image,
+              })) ?? []
+            }
             placeholder="Select users..."
           />
-          <Button>Add</Button>
+          <Button
+            className="cursor-pointer"
+            disabled={isPending || selectedUsers.length === 0}
+            onClick={() => handleAddMembers()}
+          >
+            {isPending ? (
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Add Member"
+            )}
+          </Button>
         </DialogContent>
       </Dialog>
     </>

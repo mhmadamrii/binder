@@ -23,9 +23,9 @@ import {
 
 export interface User {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
-  avatar?: string;
+  avatar: string | null;
 }
 
 interface MultiSelectUsersProps {
@@ -143,12 +143,12 @@ export function MultiSelectUsers({
                         {user.avatar ? (
                           <img
                             src={user.avatar || "/placeholder.svg"}
-                            alt={user.name}
+                            alt={user.name ?? "some user"}
                             className="h-6 w-6 rounded-full object-cover"
                           />
                         ) : (
                           <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium">
-                            {user.name.charAt(0).toUpperCase()}
+                            {user?.name?.charAt(0).toUpperCase()}
                           </div>
                         )}
                         <div className="flex flex-col">

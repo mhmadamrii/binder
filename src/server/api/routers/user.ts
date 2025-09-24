@@ -25,4 +25,9 @@ export const userRouter = createTRPCRouter({
         })
         .returning({ id: users.id });
     }),
+
+  getAllUsers: publicProcedure.query(async () => {
+    const allUsers = await db.select().from(users);
+    return allUsers;
+  }),
 });

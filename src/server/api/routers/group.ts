@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { groups } from "~/server/db/schema";
+import { groupMembers, groups } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { eq } from "drizzle-orm";
 
@@ -46,5 +46,21 @@ export const groupRouter = createTRPCRouter({
           ownerId: ctx.session.user.id,
         })
         .returning({ id: groups.id });
+    }),
+
+  addMembersToGroup: protectedProcedure
+    .input(
+      z.object({
+        userIds: z.array(z.string()),
+        groupId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.insert(groupMembers).values(
+        input.userIds.map((userId) => ({
+          userId,
+          groupId: input.groupId,
+        })),
+      );
     }),
 });

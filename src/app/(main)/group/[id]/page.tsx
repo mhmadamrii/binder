@@ -42,7 +42,7 @@ export default async function GroupById({
         </div>
         <div className="flex w-80 flex-col gap-4">
           <GroupNotes />
-          <GroupMember />
+          <GroupMember groupId={id} />
         </div>
       </div>
     </div>
