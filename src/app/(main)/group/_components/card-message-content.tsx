@@ -1,48 +1,29 @@
 import { useMessages } from "@ably/chat/react";
 import { Paperclip, Send, Smile } from "lucide-react";
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
-
-const localMessages = [
-  {
-    id: "1",
-    content: "Hey everyone! How's the project going?",
-    sender: "Alice",
-    timestamp: "10:30 AM",
-    isOwn: false,
-  },
-  {
-    id: "2",
-    content: "Making great progress! The new features are almost ready.",
-    sender: "You",
-    timestamp: "10:32 AM",
-    isOwn: true,
-  },
-  {
-    id: "3",
-    content: "Awesome! Can't wait to see them in action 🚀",
-    sender: "Bob",
-    timestamp: "10:35 AM",
-    isOwn: false,
-  },
-];
+import { api } from "~/trpc/react";
 
 export function CardMessageContent() {
+  const params = useParams<{ id: string }>();
+  const utils = api.useUtils();
+
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<
     {
-      id: string;
+      id: number;
       content: string;
       sender: string;
       timestamp: string;
       isOwn: boolean;
     }[]
-  >(localMessages);
+  >([]);
 
   const { sendMessage: send } = useMessages({
     listener: (event) => {
@@ -50,6 +31,17 @@ export function CardMessageContent() {
       toast.success("Message received");
     },
   });
+
+  const { mutate: createMessage } = api.message.createMessage.useMutation({
+    onSuccess: (res) => {
+      utils.invalidate();
+    },
+  });
+
+  const { data: previousMessages } =
+    api.message.getAllMessagesByGroupId.useQuery({
+      groupId: params.id,
+    });
 
   const handleSendMessage = async (
     e:
@@ -66,14 +58,18 @@ export function CardMessageContent() {
           type: "text",
         },
       });
+      createMessage({
+        groupId: params.id,
+        content: newMessage,
+      });
       setNewMessage("");
       setMessages((prev) => [
         ...prev,
         {
-          id: (localMessages.length + 1).toString(),
+          id: prev.length + 1,
           content: newMessage,
           sender: "You",
-          timestamp: "10:30 AM",
+          timestamp: "sending...",
           isOwn: true,
         },
       ]);
@@ -81,6 +77,18 @@ export function CardMessageContent() {
       console.error("error sending message", error);
     }
   };
+
+  const handleSetDefaultMessages = () => {
+    if (!previousMessages) return [];
+
+    setMessages(previousMessages);
+  };
+
+  useEffect(() => {
+    if (params.id) {
+      handleSetDefaultMessages();
+    }
+  }, [previousMessages, params.id]);
 
   return (
     <CardContent className="flex h-[calc(100vh-250px)] flex-col p-0">

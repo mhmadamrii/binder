@@ -15,6 +15,12 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+
 export function DialogAddNote({
   isOpenCreateNote,
   setIsOpenCreateNote,
@@ -41,14 +47,22 @@ export function DialogAddNote({
 
   return (
     <Dialog open={isOpenCreateNote} onOpenChange={setIsOpenCreateNote}>
-      <Button
-        onClick={() => setIsOpenCreateNote(true)}
-        size="sm"
-        variant="ghost"
-        className="hover:bg-secondary"
-      >
-        <PlusCircle className="h-4 w-4" />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={() => setIsOpenCreateNote(true)}
+            size="sm"
+            variant="ghost"
+            className="hover:bg-secondary"
+          >
+            <PlusCircle className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Add New Note</p>
+        </TooltipContent>
+      </Tooltip>
+
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Note</DialogTitle>

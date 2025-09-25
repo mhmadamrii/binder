@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageCircle, PlusCircle } from "lucide-react";
+import { MessageCircle, PlusCircle, SquareArrowOutUpRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Anonymous_Pro } from "next/font/google";
 import { useEffect, useState } from "react";
@@ -10,8 +11,13 @@ import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { DialogAddNote } from "./dialog-add-note";
 import { ScrollArea } from "~/components/ui/scroll-area";
-
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 type DraggableItem = {
   id: number;
@@ -28,6 +34,7 @@ const anon = Anonymous_Pro({
 });
 
 export function GroupNotes({ groupId }: { groupId: string }) {
+  const router = useRouter();
   const [isOpenCreateNote, setIsOpenCreateNote] = useState(false);
   const [draggableItems, setDraggableItems] = useState<DraggableItem[]>([]);
 
@@ -62,10 +69,27 @@ export function GroupNotes({ groupId }: { groupId: string }) {
       <CardHeader className="mb-0 py-0">
         <CardTitle className="text-foreground flex items-center justify-between">
           <span>Group Notes</span>
-          <DialogAddNote
-            isOpenCreateNote={isOpenCreateNote}
-            setIsOpenCreateNote={setIsOpenCreateNote}
-          />
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="hover:bg-secondary"
+                  onClick={() => router.push(`/group/${groupId}/notes`)}
+                >
+                  <SquareArrowOutUpRight className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Show All Notes</p>
+              </TooltipContent>
+            </Tooltip>
+            <DialogAddNote
+              isOpenCreateNote={isOpenCreateNote}
+              setIsOpenCreateNote={setIsOpenCreateNote}
+            />
+          </div>
         </CardTitle>
       </CardHeader>
 
@@ -94,7 +118,7 @@ export function GroupNotes({ groupId }: { groupId: string }) {
           </div>
         )}
         {draggableItems?.length! > 0 && (
-          <ScrollArea className="h-[300px]">
+          <ScrollArea className="h-[300px] pr-3">
             <SortableList
               items={draggableItems}
               onChange={setDraggableItems}

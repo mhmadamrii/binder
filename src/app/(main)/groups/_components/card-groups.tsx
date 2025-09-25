@@ -21,7 +21,7 @@ export function CardGroups({ filteredGroups }: CardGroupsProps) {
   const router = useRouter();
   return (
     <CardContent className="flex flex-1 flex-col">
-      <ScrollArea className="h-[calc(100vh-280px)]">
+      <ScrollArea className="h-[calc(100vh-280px)] pr-3">
         {filteredGroups.map((group) => (
           <div
             key={group.id}
