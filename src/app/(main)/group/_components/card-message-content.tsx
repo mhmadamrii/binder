@@ -1,7 +1,7 @@
 import { useMessages } from "@ably/chat/react";
 import { Paperclip, Send, Smile } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { CardContent } from "~/components/ui/card";
@@ -13,6 +13,7 @@ import { api } from "~/trpc/react";
 export function CardMessageContent() {
   const params = useParams<{ id: string }>();
   const utils = api.useUtils();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<
@@ -29,6 +30,16 @@ export function CardMessageContent() {
     listener: (event) => {
       console.log("received message", event.message);
       toast.success("Message received");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: -Math.round(Math.random() * 1000000),
+          content: event.message.text,
+          sender: "You",
+          timestamp: "saving...",
+          isOwn: false,
+        },
+      ]);
     },
   });
 
@@ -66,7 +77,7 @@ export function CardMessageContent() {
       setMessages((prev) => [
         ...prev,
         {
-          id: prev.length + 1,
+          id: -Math.round(Math.random() * 1000000),
           content: newMessage,
           sender: "You",
           timestamp: "sending...",
@@ -89,6 +100,10 @@ export function CardMessageContent() {
       handleSetDefaultMessages();
     }
   }, [previousMessages, params.id]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <CardContent className="flex h-[calc(100vh-250px)] flex-col p-0">
@@ -116,6 +131,7 @@ export function CardMessageContent() {
               </div>
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
       <Separator className="bg-border" />

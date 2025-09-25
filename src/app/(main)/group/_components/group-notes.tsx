@@ -42,8 +42,6 @@ export function GroupNotes({ groupId }: { groupId: string }) {
     groupId,
   });
 
-  console.log("groupNotes", groupNotes);
-
   const handleSetDefaultGroupNotes = () => {
     if (!groupNotes) return [];
 
