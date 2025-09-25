@@ -1,30 +1,31 @@
 "use client";
 
-import Link from "next/link";
-
 import { MessageCircle, PlusCircle } from "lucide-react";
+import { format } from "date-fns";
+import { Anonymous_Pro } from "next/font/google";
 import { useEffect, useState } from "react";
 import { SortableList } from "~/components/dnd/sortable";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
-import { NoteCard } from "./note-card";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { DialogAddNote } from "./dialog-add-note";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 type DraggableItem = {
   id: number;
   title: string;
+  desc: string;
+  author: string;
+  createdAt: Date;
 };
+
+const anon = Anonymous_Pro({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
 
 export function GroupNotes({ groupId }: { groupId: string }) {
   const [isOpenCreateNote, setIsOpenCreateNote] = useState(false);
@@ -34,6 +35,8 @@ export function GroupNotes({ groupId }: { groupId: string }) {
     groupId,
   });
 
+  console.log("groupNotes", groupNotes);
+
   const handleSetDefaultGroupNotes = () => {
     if (!groupNotes) return [];
 
@@ -41,6 +44,9 @@ export function GroupNotes({ groupId }: { groupId: string }) {
       groupNotes?.map((item) => ({
         id: item.notes.id,
         title: item.notes.title,
+        desc: item.notes.desc,
+        author: item.user.name ?? "Anonymous",
+        createdAt: item.notes.createdAt,
       })),
     );
   };
@@ -52,8 +58,8 @@ export function GroupNotes({ groupId }: { groupId: string }) {
   }, [groupNotes]);
 
   return (
-    <Card className="card-gradient border-border min-h-[400px]">
-      <CardHeader>
+    <Card className="card-gradient min-h-[400px] pt-3 pb-2">
+      <CardHeader className="mb-0 py-0">
         <CardTitle className="text-foreground flex items-center justify-between">
           <span>Group Notes</span>
           <DialogAddNote
@@ -63,7 +69,7 @@ export function GroupNotes({ groupId }: { groupId: string }) {
         </CardTitle>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-2">
         {groupNotes?.length == 0 && (
           <div
             className={cn("py-8 text-center", {
@@ -95,20 +101,39 @@ export function GroupNotes({ groupId }: { groupId: string }) {
               renderItem={(item) => {
                 return (
                   <SortableList.Item id={item.id}>
-                    <div className="h-full w-full bg-blue-500">
-                      <pre>{JSON.stringify(item, null, 2)}</pre>
-                      <SortableList.DragHandle />
+                    <div className="flex h-full w-full justify-between">
+                      <div className="w-full">
+                        <Card>
+                          <CardContent>
+                            <div className="flex justify-between">
+                              <div className="w-[90%]">
+                                <h1 className={cn(anon.className)}>
+                                  {item.title}
+                                </h1>
+                                <p
+                                  className={cn(
+                                    "truncate text-ellipsis",
+                                    anon.className,
+                                  )}
+                                >
+                                  {item.desc}
+                                </p>
+                                <span className={cn("text-sm", anon.className)}>
+                                  {format(item.createdAt, "dd/MM/yyyy")} - by{" "}
+                                  {item.author}
+                                </span>
+                              </div>
+                              <SortableList.DragHandle />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
                     </div>
                   </SortableList.Item>
                 );
               }}
             />
           </ScrollArea>
-        )}
-        {groupNotes?.length! > 0 && (
-          <CardFooter className="flex items-center justify-center">
-            <Link href="/groups">see all notes</Link>
-          </CardFooter>
         )}
       </CardContent>
     </Card>

@@ -6,7 +6,6 @@ import { MessageCircle } from "lucide-react";
 import { GroupMessage } from "../_components/group-message";
 import { GroupMember } from "../_components/group-member";
 import { Suspense } from "react";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { GroupByIdSkeleton } from "../_components/group-byid-skeleton";
 
 async function GroupByIdWithData({ id }: { id: string }) {

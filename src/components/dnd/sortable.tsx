@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Card, CardContent } from "../ui/card";
 import { toast } from "sonner";
 import { DragOverlay, defaultDropAnimationSideEffects } from "@dnd-kit/core";
 
@@ -86,10 +87,7 @@ export function SortableList<T extends BaseItem>({
       }}
     >
       <SortableContext items={items}>
-        <ul
-          className="flex w-full flex-col gap-[10px] border border-red-500"
-          role="application"
-        >
+        <ul className="flex w-full flex-col gap-[10px]" role="application">
           {items.map((item) => (
             <React.Fragment key={item.id}>{renderItem(item)}</React.Fragment>
           ))}
@@ -149,13 +147,9 @@ export function SortableItem({
 
   return (
     <SortableItemContext.Provider value={context}>
-      <li
-        className="h-[200px] w-full border border-red-500"
-        ref={setNodeRef}
-        style={style}
-      >
+      <div ref={setNodeRef} style={style}>
         {children}
-      </li>
+      </div>
     </SortableItemContext.Provider>
   );
 }
