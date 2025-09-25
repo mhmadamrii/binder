@@ -26,7 +26,7 @@ async function GroupByIdWithData({ id }: { id: string }) {
                 Messages
               </CardTitle>
             </CardHeader>
-            <GroupMessage />
+            <GroupMessage groupId={id} />
           </Card>
         </div>
         <div className="flex w-80 flex-col gap-4">
