@@ -3,7 +3,8 @@
 import Link from "next/link";
 
 import { MessageCircle, PlusCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { SortableList } from "~/components/dnd/sortable";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -11,6 +12,7 @@ import { NoteCard } from "./note-card";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { DialogAddNote } from "./dialog-add-note";
 import { ScrollArea } from "~/components/ui/scroll-area";
+
 import {
   Card,
   CardContent,
@@ -19,19 +21,35 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 
+type DraggableItem = {
+  id: number;
+  title: string;
+};
+
 export function GroupNotes({ groupId }: { groupId: string }) {
   const [isOpenCreateNote, setIsOpenCreateNote] = useState(false);
+  const [draggableItems, setDraggableItems] = useState<DraggableItem[]>([]);
 
   const { data: groupNotes } = api.note.getAllGroupNotes.useQuery({
     groupId,
   });
 
-  const onDragEnd = (result: any) => {
-    if (!result.destination) return;
-    console.log("Dragged:", result.source.index, "→", result.destination.index);
+  const handleSetDefaultGroupNotes = () => {
+    if (!groupNotes) return [];
+
+    setDraggableItems(
+      groupNotes?.map((item) => ({
+        id: item.notes.id,
+        title: item.notes.title,
+      })),
+    );
   };
 
-  console.log("groupNotes", groupNotes);
+  useEffect(() => {
+    if (groupNotes) {
+      handleSetDefaultGroupNotes();
+    }
+  }, [groupNotes]);
 
   return (
     <Card className="card-gradient border-border min-h-[400px]">
@@ -69,54 +87,24 @@ export function GroupNotes({ groupId }: { groupId: string }) {
             </Button>
           </div>
         )}
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable
-            ignoreContainerClipping
-            isDropDisabled={false}
-            isCombineEnabled
-            droppableId="note-list"
-          >
-            {(provided) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className="space-y-2"
-              >
-                <ScrollArea
-                  className={cn("h-[calc(100vh-550px)]", {
-                    "h-0": groupNotes?.length == 0,
-                  })}
-                >
-                  {groupNotes?.map((note, index) => (
-                    <Draggable
-                      key={note.notes.id}
-                      draggableId={note.notes.id.toString()}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps} // required
-                          {...provided.dragHandleProps} // if you want whole card draggable
-                          style={provided.draggableProps.style} // required for movement
-                          className={`transition ${
-                            snapshot.isDragging ? "scale-105 shadow-lg" : ""
-                          }`}
-                        >
-                          <NoteCard
-                            note={note}
-                            dragHandleProps={provided.dragHandleProps}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                </ScrollArea>
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        {draggableItems?.length! > 0 && (
+          <ScrollArea className="h-[300px]">
+            <SortableList
+              items={draggableItems}
+              onChange={setDraggableItems}
+              renderItem={(item) => {
+                return (
+                  <SortableList.Item id={item.id}>
+                    <div className="h-full w-full bg-blue-500">
+                      <pre>{JSON.stringify(item, null, 2)}</pre>
+                      <SortableList.DragHandle />
+                    </div>
+                  </SortableList.Item>
+                );
+              }}
+            />
+          </ScrollArea>
+        )}
         {groupNotes?.length! > 0 && (
           <CardFooter className="flex items-center justify-center">
             <Link href="/groups">see all notes</Link>
