@@ -10,11 +10,20 @@ export const groupRouter = createTRPCRouter({
   }),
 
   getAllMyGroups: protectedProcedure.query(async ({ ctx }) => {
-    const allPosts = await ctx.db
-      .select()
+    const myGroups = await ctx.db
+      .select({
+        id: groups.id,
+        name: groups.name,
+        desc: groups.desc,
+        isPrivate: groups.isPrivate,
+        ownerId: groups.ownerId,
+        createdAt: groups.createdAt,
+      })
       .from(groups)
-      .where(eq(groups.ownerId, ctx.session.user.id));
-    return allPosts;
+      .innerJoin(groupMembers, eq(groups.id, groupMembers.groupId))
+      .where(eq(groupMembers.userId, ctx.session.user.id));
+
+    return myGroups;
   }),
 
   getGroupById: protectedProcedure
@@ -52,7 +61,7 @@ export const groupRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db
+      const newGroup = await ctx.db
         .insert(groups)
         .values({
           name: input.name,
@@ -61,7 +70,32 @@ export const groupRouter = createTRPCRouter({
           ownerId: ctx.session.user.id,
         })
         .returning({ id: groups.id });
+
+      if (newGroup) {
+        await ctx.db.insert(groupMembers).values({
+          userId: ctx.session.user.id,
+          groupId: newGroup[0]?.id ?? "",
+        });
+      }
+
+      return newGroup;
     }),
+
+  getPublicGroups: protectedProcedure.query(async ({ ctx }) => {
+    const publicGroups = await ctx.db
+      .select({
+        id: groups.id,
+        name: groups.name,
+        desc: groups.desc,
+        isPrivate: groups.isPrivate,
+        ownerId: groups.ownerId,
+        createdAt: groups.createdAt,
+      })
+      .from(groups)
+      .where(eq(groups.isPrivate, false));
+
+    return publicGroups;
+  }),
 
   addMembersToGroup: protectedProcedure
     .input(

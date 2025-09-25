@@ -123,7 +123,7 @@ export const groups = createTable("groups", {
 export const groupMembers = createTable("group_members", {
   id: serial("id").primaryKey(),
   groupId: uuid("group_id")
-    .references(() => groups.id)
+    .references(() => groups.id, { onDelete: "cascade" })
     .notNull(),
   userId: varchar("user_id", { length: 255 })
     .references(() => users.id)
@@ -134,7 +134,7 @@ export const groupMembers = createTable("group_members", {
 export const messages = createTable("messages", {
   id: serial("id").primaryKey(),
   groupId: uuid("group_id")
-    .references(() => groups.id)
+    .references(() => groups.id, { onDelete: "cascade" })
     .notNull(),
   senderId: varchar("sender_id", { length: 255 })
     .references(() => users.id)
@@ -146,10 +146,10 @@ export const messages = createTable("messages", {
 export const notes = createTable("notes", {
   id: serial("id").primaryKey(),
   groupId: uuid("group_id")
-    .references(() => groups.id)
+    .references(() => groups.id, { onDelete: "cascade" })
     .notNull(),
   authorId: varchar("author_id", { length: 255 })
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   title: varchar("title", { length: 255 }).notNull(),
   desc: varchar("desc", { length: 255 }).notNull(),

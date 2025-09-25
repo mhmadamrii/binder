@@ -6,17 +6,40 @@ import { CardGroupHeader } from "./_components/card-group-header";
 import { Suspense } from "react";
 import { api } from "~/trpc/server";
 import { CardGroupSkeleton } from "./_components/card-group-skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 async function GroupListData() {
   const data = await api.group.getAllMyGroups();
+
   return (
     <CardGroups
-      filteredGroups={data.map((item) => {
+      filteredGroups={data.map((item, idx) => {
         return {
           id: item.id,
           name: item.name,
           lastMessage: "No messages yet",
           timestamp: item.createdAt.toISOString(),
+          isPrivate: item.isPrivate,
+          unread: 0,
+          members: 1,
+        };
+      })}
+    />
+  );
+}
+
+async function PublicGroupListData() {
+  const data = await api.group.getPublicGroups();
+
+  return (
+    <CardGroups
+      filteredGroups={data.map((item, idx) => {
+        return {
+          id: item.id,
+          name: item.name,
+          lastMessage: "No messages yet",
+          timestamp: item.createdAt.toISOString(),
+          isPrivate: item.isPrivate,
           unread: 0,
           members: 1,
         };
@@ -33,9 +56,22 @@ export default function Groups() {
           <div className="h-full lg:col-span-1">
             <Card className="card-gradient border-border h-full">
               <CardGroupHeader />
-              <Suspense fallback={<CardGroupSkeleton />}>
-                <GroupListData />
-              </Suspense>
+              <Tabs defaultValue="public" className="w-full px-3">
+                <TabsList className="w-full">
+                  <TabsTrigger value="public">Public</TabsTrigger>
+                  <TabsTrigger value="mine">My Groups</TabsTrigger>
+                </TabsList>
+                <TabsContent value="public">
+                  <Suspense fallback={<CardGroupSkeleton />}>
+                    <PublicGroupListData />
+                  </Suspense>
+                </TabsContent>
+                <TabsContent value="mine" className="px-0">
+                  <Suspense fallback={<CardGroupSkeleton />}>
+                    <GroupListData />
+                  </Suspense>
+                </TabsContent>
+              </Tabs>
             </Card>
           </div>
 

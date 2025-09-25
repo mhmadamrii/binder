@@ -107,7 +107,7 @@ export function MultiSelectUsers({
             </div>
             <div className="ml-2 flex items-center gap-1">
               {selectedUsers.length > 0 && (
-                <button
+                <span
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -116,7 +116,7 @@ export function MultiSelectUsers({
                   className="hover:bg-muted rounded-sm p-1"
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </span>
               )}
               <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
             </div>

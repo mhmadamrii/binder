@@ -14,12 +14,6 @@ export function Header() {
             <h1 className="from-primary to-primary-glow bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent">
               Binder
             </h1>
-            <Badge
-              variant="secondary"
-              className="bg-primary/20 text-primary border-primary/30"
-            >
-              Dashboard
-            </Badge>
           </div>
 
           <div className="flex items-center space-x-2">

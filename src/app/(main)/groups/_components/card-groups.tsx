@@ -1,6 +1,6 @@
 "use client";
 
-import { Users } from "lucide-react";
+import { HatGlasses, Users } from "lucide-react";
 import { CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -14,14 +14,16 @@ interface CardGroupsProps {
     timestamp: string;
     unread: number;
     members: number;
+    isPrivate: boolean;
   }>;
 }
 
 export function CardGroups({ filteredGroups }: CardGroupsProps) {
   const router = useRouter();
+  console.log("filteredGroups", filteredGroups);
   return (
-    <CardContent className="flex flex-1 flex-col">
-      <ScrollArea className="h-[calc(100vh-280px)] pr-3">
+    <CardContent className="flex flex-1 flex-col px-0">
+      <ScrollArea className="h-[calc(100vh-310px)] pr-3" type="always">
         {filteredGroups.map((group) => (
           <div
             key={group.id}
@@ -40,6 +42,11 @@ export function CardGroups({ filteredGroups }: CardGroupsProps) {
                   <Users className="mr-1 h-3 w-3" />
                   {group.members}
                 </div>
+                {group.isPrivate && (
+                  <div className="text-muted-foreground flex items-center text-xs">
+                    <HatGlasses className="mr-1 h-3 w-3" />
+                  </div>
+                )}
               </div>
             </div>
             <p className="text-muted-foreground truncate text-sm">
