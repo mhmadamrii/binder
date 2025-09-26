@@ -125,27 +125,34 @@ export function GroupNotes({ groupId }: { groupId: string }) {
                   <SortableList.Item id={item.id}>
                     <div className="flex h-full w-full justify-between">
                       <div className="w-full">
-                        <Card>
-                          <CardContent>
+                        <Card className="relative pt-2 pb-2 pl-2">
+                          <CardContent className="p-1">
                             <div className="flex justify-between">
-                              <div className="w-[90%]">
-                                <h1 className={cn(anon.className)}>
+                              <div className="flex w-[90%] flex-col gap-2">
+                                <h1 className={cn("text-md", anon.className)}>
                                   {item.title}
                                 </h1>
                                 <p
                                   className={cn(
-                                    "truncate text-ellipsis",
+                                    "truncate text-sm text-ellipsis",
                                     anon.className,
                                   )}
                                 >
                                   {item.desc}
                                 </p>
-                                <span className={cn("text-sm", anon.className)}>
-                                  {format(item.createdAt, "dd/MM/yyyy")} - by{" "}
+                                <p
+                                  className={cn(
+                                    "text-muted-foreground text-sm",
+                                    anon.className,
+                                  )}
+                                >
+                                  {format(item.createdAt, "dd/MM/yyyy")} — by{" "}
                                   {item.author}
-                                </span>
+                                </p>
                               </div>
-                              <SortableList.DragHandle />
+                              <div className="absolute top-0 right-0 p-0">
+                                <SortableList.DragHandle />
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
