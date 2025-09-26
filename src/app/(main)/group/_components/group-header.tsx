@@ -18,7 +18,7 @@ export function GroupHeader({
       <div className="px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link href="/groups">
+            <Link prefetch={true} href="/groups">
               <Button
                 variant="secondary"
                 size="icon"

@@ -3,7 +3,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 export function CardGroupSkeleton() {
   return (
     <div className="p-4">
-      {[...Array(6)].map((_, i) => (
+      {[...Array(4)].map((_, i) => (
         <div
           key={i}
           className="border-border mb-[10px] cursor-pointer rounded-lg border p-3 transition-colors"
