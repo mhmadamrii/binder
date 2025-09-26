@@ -53,7 +53,7 @@ export function DialogAddNote({
             onClick={() => setIsOpenCreateNote(true)}
             size="sm"
             variant="ghost"
-            className="hover:bg-secondary"
+            className="hover:bg-secondary cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
           </Button>

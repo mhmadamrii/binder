@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Header } from "~/components/header";
 import { auth } from "~/server/auth";
 
 export default async function MainLayout({

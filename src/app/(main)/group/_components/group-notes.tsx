@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { MessageCircle, PlusCircle, SquareArrowOutUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
@@ -70,14 +72,12 @@ export function GroupNotes({ groupId }: { groupId: string }) {
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="hover:bg-secondary"
-                  onClick={() => router.push(`/group/${groupId}/notes`)}
+                <Link
+                  className="hover:bg-secondary block"
+                  href={`/group/${groupId}/notes`}
                 >
                   <SquareArrowOutUpRight className="h-4 w-4" />
-                </Button>
+                </Link>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Show All Notes</p>

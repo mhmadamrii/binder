@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { CircleCheckBig, HatGlasses, Loader, Users } from "lucide-react";
 import { CardContent } from "~/components/ui/card";
 import { api } from "~/trpc/react";
@@ -35,7 +37,6 @@ interface CardGroupsProps {
 }
 
 export function CardGroups({ filteredGroups, isPublic }: CardGroupsProps) {
-  const router = useRouter();
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [isOpenRequestJoin, setIsOpenRequestJoin] = useState(false);
 
@@ -43,16 +44,18 @@ export function CardGroups({ filteredGroups, isPublic }: CardGroupsProps) {
     <CardContent className="flex flex-1 flex-col px-0">
       <ScrollArea className="h-[calc(100vh-310px)]" type="always">
         {filteredGroups.map((group, idx) => (
-          <div
+          <Link
+            prefetch={true}
+            className="hover:bg-secondary/50 mb-[10px] block w-full cursor-pointer rounded-lg border p-3 transition-colors"
+            href={`/group/${group.id}`}
             key={idx}
-            onClick={() => {
+            onClick={(e) => {
               if (isPublic && !group.isJoined) {
+                e.preventDefault();
                 setSelectedGroupId(group.id);
-                return setIsOpenRequestJoin(true);
+                setIsOpenRequestJoin(true);
               }
-              router.push(`/group/${group.id}`);
             }}
-            className="border-border hover:bg-secondary/50 mb-[10px] cursor-pointer rounded-lg border p-3 transition-colors"
           >
             <div className="mb-1 flex items-center justify-between">
               <h3 className="text-foreground font-semibold">{group.name}</h3>
@@ -87,7 +90,7 @@ export function CardGroups({ filteredGroups, isPublic }: CardGroupsProps) {
                 </div>
               )}
             </div>
-          </div>
+          </Link>
         ))}
       </ScrollArea>
       <RequestJoinModal
