@@ -10,7 +10,7 @@ export function CardGroupHeader() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   return (
     <>
-      <CardHeader>
+      <CardHeader className="px-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-foreground">Your Groups</CardTitle>
         </div>

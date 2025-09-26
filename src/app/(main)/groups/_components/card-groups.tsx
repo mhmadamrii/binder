@@ -1,12 +1,27 @@
 "use client";
 
-import { HatGlasses, Users } from "lucide-react";
+import { CircleCheckBig, HatGlasses, Loader, Users } from "lucide-react";
 import { CardContent } from "~/components/ui/card";
+import { api } from "~/trpc/react";
+import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 
 interface CardGroupsProps {
+  isPublic?: boolean;
   filteredGroups: Array<{
     id: string;
     name: string;
@@ -15,19 +30,28 @@ interface CardGroupsProps {
     unread: number;
     members: number;
     isPrivate: boolean;
+    isJoined?: boolean;
   }>;
 }
 
-export function CardGroups({ filteredGroups }: CardGroupsProps) {
+export function CardGroups({ filteredGroups, isPublic }: CardGroupsProps) {
   const router = useRouter();
-  console.log("filteredGroups", filteredGroups);
+  const [selectedGroupId, setSelectedGroupId] = useState("");
+  const [isOpenRequestJoin, setIsOpenRequestJoin] = useState(false);
+
   return (
     <CardContent className="flex flex-1 flex-col px-0">
-      <ScrollArea className="h-[calc(100vh-310px)] pr-3" type="always">
-        {filteredGroups.map((group) => (
+      <ScrollArea className="h-[calc(100vh-310px)]" type="always">
+        {filteredGroups.map((group, idx) => (
           <div
-            key={group.id}
-            onClick={() => router.push(`/group/${group.id}`)}
+            key={idx}
+            onClick={() => {
+              if (isPublic && !group.isJoined) {
+                setSelectedGroupId(group.id);
+                return setIsOpenRequestJoin(true);
+              }
+              router.push(`/group/${group.id}`);
+            }}
             className="border-border hover:bg-secondary/50 mb-[10px] cursor-pointer rounded-lg border p-3 transition-colors"
           >
             <div className="mb-1 flex items-center justify-between">
@@ -49,15 +73,69 @@ export function CardGroups({ filteredGroups }: CardGroupsProps) {
                 )}
               </div>
             </div>
-            <p className="text-muted-foreground truncate text-sm">
+            <p className="text-muted-foreground max-w-[300px] truncate text-sm text-ellipsis">
               {group.lastMessage}
             </p>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {group.timestamp}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground mt-1 text-xs">
+                {group.timestamp}
+              </p>
+              {group.isJoined && (
+                <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                  <CircleCheckBig className="mr-1 h-3 w-3 text-green-500" />
+                  Joined
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </ScrollArea>
+      <RequestJoinModal
+        selectedGroupId={selectedGroupId}
+        open={isOpenRequestJoin}
+        onOpenChange={setIsOpenRequestJoin}
+      />
     </CardContent>
+  );
+}
+
+function RequestJoinModal({
+  selectedGroupId,
+  open,
+  onOpenChange,
+}: {
+  selectedGroupId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const router = useRouter();
+
+  const { mutate, isPending } = api.group.addCurrentUserToGroup.useMutation({
+    onSuccess: (res) => {
+      router.push(`/group/${res.groupId}`);
+      toast.success("User added to group successfully!");
+    },
+  });
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete your
+            account and remove your data from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => mutate({ groupId: selectedGroupId })}
+          >
+            {isPending ? <Loader className="animate-spin" /> : "Proceed"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

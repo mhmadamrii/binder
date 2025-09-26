@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { api } from "~/trpc/server";
 import { CardGroupSkeleton } from "./_components/card-group-skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { format } from "date-fns";
 
 async function GroupListData() {
   const data = await api.group.getAllMyGroups();
@@ -17,11 +18,11 @@ async function GroupListData() {
         return {
           id: item.id,
           name: item.name,
-          lastMessage: "No messages yet",
-          timestamp: item.createdAt.toISOString(),
+          lastMessage: item.desc,
+          timestamp: `created at ${format(item.createdAt, "dd/MM/yyyy")}`,
           isPrivate: item.isPrivate,
           unread: 0,
-          members: 1,
+          members: item.membersCount,
         };
       })}
     />
@@ -33,15 +34,17 @@ async function PublicGroupListData() {
 
   return (
     <CardGroups
+      isPublic
       filteredGroups={data.map((item, idx) => {
         return {
           id: item.id,
           name: item.name,
-          lastMessage: "No messages yet",
-          timestamp: item.createdAt.toISOString(),
+          lastMessage: item.desc,
+          timestamp: `created at ${format(item.createdAt, "dd/MM/yyyy")}`,
           isPrivate: item.isPrivate,
           unread: 0,
-          members: 1,
+          members: item.membersCount,
+          isJoined: item.isJoined,
         };
       })}
     />

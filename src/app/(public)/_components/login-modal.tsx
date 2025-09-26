@@ -61,6 +61,9 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         password,
         redirect: false,
       });
+      if (!res?.error) {
+        router.push("/groups");
+      }
       if (res?.error) {
         toast.error("Invalid email or password");
       }

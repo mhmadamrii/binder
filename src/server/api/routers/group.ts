@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { groupMembers, groups, users } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export const groupRouter = createTRPCRouter({
   getAllGroups: protectedProcedure.query(async ({ ctx }) => {
@@ -18,10 +18,21 @@ export const groupRouter = createTRPCRouter({
         isPrivate: groups.isPrivate,
         ownerId: groups.ownerId,
         createdAt: groups.createdAt,
+        membersCount: sql<number>`COUNT(${groupMembers.id})`.as(
+          "members_count",
+        ),
       })
       .from(groups)
       .innerJoin(groupMembers, eq(groups.id, groupMembers.groupId))
-      .where(eq(groupMembers.userId, ctx.session.user.id));
+      .where(eq(groupMembers.userId, ctx.session.user.id))
+      .groupBy(
+        groups.id,
+        groups.name,
+        groups.desc,
+        groups.isPrivate,
+        groups.ownerId,
+        groups.createdAt,
+      );
 
     return myGroups;
   }),
@@ -90,9 +101,31 @@ export const groupRouter = createTRPCRouter({
         isPrivate: groups.isPrivate,
         ownerId: groups.ownerId,
         createdAt: groups.createdAt,
+        membersCount: sql<number>`COUNT(${groupMembers.id})`.as(
+          "members_count",
+        ),
+        isJoined: sql<boolean>`
+      EXISTS (
+        SELECT 1
+        FROM ${groupMembers} gm
+        WHERE gm.group_id = ${groups.id}
+          AND gm.user_id = ${ctx.session.user.id}
+      )
+    `.as("is_joined"),
       })
       .from(groups)
-      .where(eq(groups.isPrivate, false));
+      .leftJoin(groupMembers, eq(groups.id, groupMembers.groupId))
+      .where(eq(groups.isPrivate, false))
+      .groupBy(
+        groups.id,
+        groups.name,
+        groups.desc,
+        groups.isPrivate,
+        groups.ownerId,
+        groups.createdAt,
+      );
+
+    console.log("publicGroups", publicGroups);
 
     return publicGroups;
   }),
@@ -111,5 +144,20 @@ export const groupRouter = createTRPCRouter({
           groupId: input.groupId,
         })),
       );
+    }),
+
+  addCurrentUserToGroup: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(groupMembers).values({
+        userId: ctx.session.user.id,
+        groupId: input.groupId,
+      });
+
+      return { groupId: input.groupId };
     }),
 });
