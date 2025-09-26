@@ -1,8 +1,8 @@
 import { useMessages } from "@ably/chat/react";
-import { Paperclip, Send, Smile } from "lucide-react";
+import { Paperclip, Send, Smile, Check, CheckCheck } from "lucide-react";
 import { useParams } from "next/navigation";
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -26,33 +26,29 @@ export function CardMessageContent() {
     }[]
   >([]);
 
-  const { sendMessage: send } = useMessages({
-    listener: (event) => {
-      console.log("received message", event.message);
-      toast.success("Message received");
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: -Math.round(Math.random() * 1000000),
-          content: event.message.text,
-          sender: "You",
-          timestamp: "saving...",
-          isOwn: false,
-        },
-      ]);
-    },
-  });
-
   const { mutate: createMessage } = api.message.createMessage.useMutation({
     onSuccess: (res) => {
       utils.invalidate();
     },
   });
 
-  const { data: previousMessages } =
-    api.message.getAllMessagesByGroupId.useQuery({
-      groupId: params.id,
-    });
+  const { data: previousMessages } = api.message.getAllMessagesByGroupId.useQuery({ groupId: params.id }); // prettier-ignore
+  const { data: user } = api.user.getCurrentUser.useQuery();
+
+  const { sendMessage: send } = useMessages({
+    listener: (event) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: -Math.round(Math.random() * 1000000),
+          content: event.message.text,
+          sender: "",
+          timestamp: "saving...",
+          isOwn: true,
+        },
+      ]);
+    },
+  });
 
   const handleSendMessage = async (
     e:
@@ -64,8 +60,7 @@ export function CardMessageContent() {
       await send({
         text: newMessage,
         metadata: {
-          userId: "",
-          role: "customer",
+          userId: user?.id,
           type: "text",
         },
       });
@@ -74,16 +69,6 @@ export function CardMessageContent() {
         content: newMessage,
       });
       setNewMessage("");
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: -Math.round(Math.random() * 1000000),
-          content: newMessage,
-          sender: "You",
-          timestamp: "sending...",
-          isOwn: true,
-        },
-      ]);
     } catch (error) {
       console.error("error sending message", error);
     }
@@ -91,7 +76,6 @@ export function CardMessageContent() {
 
   const handleSetDefaultMessages = () => {
     if (!previousMessages) return [];
-
     setMessages(previousMessages);
   };
 
@@ -112,13 +96,24 @@ export function CardMessageContent() {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${msg.isOwn ? "justify-end" : "justify-start"}`}
+              className={`flex items-end gap-2 ${
+                msg.isOwn ? "justify-end" : "justify-start"
+              }`}
             >
+              {!msg.isOwn && (
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={msg.sender ?? ""} alt={msg.sender} />
+                  <AvatarFallback>
+                    {msg.sender?.[0]?.toUpperCase() ?? "?"}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+
               <div
-                className={`max-w-xs rounded-lg px-4 py-2 lg:max-w-md ${
+                className={`max-w-xs rounded-lg px-4 py-2 lg:max-w-lg ${
                   msg.isOwn
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground"
+                    ? "bg-primary text-primary-foreground rounded-br-none"
+                    : "bg-secondary text-secondary-foreground rounded-bl-none"
                 }`}
               >
                 {!msg.isOwn && (
@@ -126,9 +121,23 @@ export function CardMessageContent() {
                     {msg.sender}
                   </p>
                 )}
-                <p className="text-sm">{msg.content}</p>
-                <p className="mt-1 text-xs opacity-60">{msg.timestamp}</p>
+                <div className="flex items-end gap-2">
+                  <p className="text-sm">{msg.content}</p>
+                  <p className="mt-1 flex gap-1 text-xs opacity-60">
+                    {msg.timestamp}
+                    {msg.isOwn && <CheckCheck className="h-4 w-4" />}
+                  </p>
+                </div>
               </div>
+
+              {msg.isOwn && (
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={msg.sender ?? ""} alt={user?.name ?? ""} />
+                  <AvatarFallback>
+                    {user?.name?.[0]?.toUpperCase() ?? "?"}
+                  </AvatarFallback>
+                </Avatar>
+              )}
             </div>
           ))}
           <div ref={messagesEndRef} />

@@ -9,7 +9,7 @@ import { Suspense } from "react";
 import { GroupByIdSkeleton } from "../_components/group-byid-skeleton";
 
 async function GroupByIdWithData({ id }: { id: string }) {
-  const data = await api.group.getGroupById({ id });
+  const [data] = await Promise.all([await api.group.getGroupById({ id })]);
   return (
     <>
       <GroupHeader

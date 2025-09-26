@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 
 import { z } from "zod";
 import { users } from "~/server/db/schema";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { db } from "~/server/db";
 
 export const userRouter = createTRPCRouter({
@@ -30,4 +30,8 @@ export const userRouter = createTRPCRouter({
     const allUsers = await db.select().from(users);
     return allUsers;
   }),
+
+  getCurrentUser: protectedProcedure.query(
+    async ({ ctx }) => ctx?.session?.user,
+  ),
 });

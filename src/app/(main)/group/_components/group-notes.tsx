@@ -19,7 +19,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 
-type DraggableItem = {
+export type DraggableItem = {
   id: number;
   title: string;
   desc: string;
@@ -27,7 +27,7 @@ type DraggableItem = {
   createdAt: Date;
 };
 
-const anon = Anonymous_Pro({
+export const anon = Anonymous_Pro({
   subsets: ["latin"],
   weight: "400",
   display: "swap",

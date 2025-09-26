@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
-import { Mail, Lock, MessageSquare, User } from "lucide-react";
+import { Mail, Lock, MessageSquare, User, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
@@ -55,6 +55,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   };
 
   const handleLogin = async () => {
+    setIsLoading(true);
     try {
       const res = await signIn("credentials", {
         email,
@@ -69,6 +70,8 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       }
     } catch (error) {
       console.log("error", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,6 +106,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                       onChange={(e) => setEmail(e.target.value)}
                       className="bg-input border-border focus:ring-ring pl-10"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -120,16 +124,17 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                       onChange={(e) => setPassword(e.target.value)}
                       className="bg-input border-border focus:ring-ring pl-10"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
                 <Button
                   onClick={handleLogin}
                   type="button"
-                  className="btn-hero w-full font-semibold"
+                  className="btn-hero w-full cursor-pointer font-semibold"
                   disabled={isLoading}
                 >
-                  {isPending ? "Signing in..." : "Sign In"}
+                  {isLoading ? <Loader className="animate-spin" /> : "Sign In"}
                 </Button>
               </div>
             </TabsContent>
@@ -148,6 +153,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                       onChange={(e) => setName(e.target.value)}
                       className="bg-input border-border focus:ring-ring pl-10"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -165,6 +171,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                       onChange={(e) => setEmail(e.target.value)}
                       className="bg-input border-border focus:ring-ring pl-10"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -182,15 +189,16 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                       onChange={(e) => setPassword(e.target.value)}
                       className="bg-input border-border focus:ring-ring pl-10"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
                 <Button
                   type="submit"
-                  className="btn-hero w-full font-semibold"
+                  className="btn-hero w-full cursor-pointer font-semibold"
                   disabled={isLoading}
                 >
-                  {isPending ? "Signing in..." : "Sign Up"}
+                  {isPending ? <Loader className="animate-spin" /> : "Sign Up"}
                 </Button>
               </div>
             </TabsContent>
