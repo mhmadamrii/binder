@@ -36,7 +36,6 @@ export const anon = Anonymous_Pro({
 });
 
 export function GroupNotes({ groupId }: { groupId: string }) {
-  const router = useRouter();
   const [isOpenCreateNote, setIsOpenCreateNote] = useState(false);
   const [draggableItems, setDraggableItems] = useState<DraggableItem[]>([]);
 

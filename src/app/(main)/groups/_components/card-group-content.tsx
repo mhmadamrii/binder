@@ -8,9 +8,17 @@ import { CreateGroup } from "./create-group";
 import { useState } from "react";
 import { useQueryState } from "nuqs";
 import { api } from "~/trpc/react";
+import { InvitationModal } from "./invitation-modal";
+import { isValid } from "date-fns";
 
 export function CardGroupContent() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [groupStatus, setGroupStatus] = useState({
+    isOpen: false,
+    isValid: false,
+  });
+
+  const [group, setGroup] = useState<any>(null);
   const [invitation, setInvitation] = useQueryState("invitation", {
     defaultValue: "",
   });
@@ -18,20 +26,17 @@ export function CardGroupContent() {
   const { mutate: checkInvitation, isPending } =
     api.group.checkInvite.useMutation({
       onSuccess: (res) => {
-        /**
-         * res: {
-    id: string;
-    name: string;
-    createdAt: Date;
-    desc: string;
-    isPrivate: boolean;
-    inviteCode: string | null;
-    ownerId: string;
-}
-         */
+        if (res?.inviteCode) {
+          setGroupStatus((prev) => ({ ...prev, isOpen: true, isValid: true }));
+          setGroup(res);
+        }
+        if (!res?.inviteCode) {
+          setGroupStatus((prev) => ({ ...prev, isOpen: true, isValid: false }));
+        }
         console.log("res", res);
       },
     });
+
   return (
     <>
       <CardContent className="flex flex-1 items-center justify-center">
@@ -78,6 +83,12 @@ export function CardGroupContent() {
         </div>
       </CardContent>
       <CreateGroup open={showCreateGroup} onOpenChange={setShowCreateGroup} />
+      <InvitationModal
+        isOpen={groupStatus.isOpen}
+        onClose={() => setGroupStatus((prev) => ({ ...prev, isOpen: false }))}
+        isValid={groupStatus.isValid}
+        group={group}
+      />
     </>
   );
 }

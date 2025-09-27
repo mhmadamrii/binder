@@ -1,4 +1,4 @@
-import { Loader, PlusCircle } from "lucide-react";
+import { Loader, Notebook, PlusCircle } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -65,7 +65,10 @@ export function DialogAddNote({
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Note</DialogTitle>
+          <DialogTitle className="mb-2 flex items-center">
+            <Notebook className="mr-2 h-4 w-4" />
+            Add New Note
+          </DialogTitle>
           <form className={cn("space-y-3 rounded-lg", {})}>
             <Input
               placeholder="Note title..."

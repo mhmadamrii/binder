@@ -1,7 +1,11 @@
 "use client";
 
 import { Button } from "~/components/ui/button";
-import { Users } from "lucide-react";
+import { toast } from "sonner";
+import { Loader, Users } from "lucide-react";
+import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
+
 import {
   Dialog,
   DialogContent,
@@ -14,14 +18,13 @@ import {
 type InvitationModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  isValid: boolean; // from your API check
+  isValid: boolean;
   group?: {
     id: string;
     name: string;
     desc: string;
     membersCount: number;
   };
-  onJoin: (groupId: string) => void;
 };
 
 export function InvitationModal({
@@ -29,11 +32,17 @@ export function InvitationModal({
   onClose,
   isValid,
   group,
-  onJoin,
 }: InvitationModalProps) {
+  const router = useRouter();
+
+  const { mutate, isPending } = api.group.addCurrentUserToGroup.useMutation({
+    onSuccess: (res) => {
+      router.push(`/group/${res.groupId}`);
+      toast.success(`Successfully joined group ${group?.name}`);
+    },
+  });
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* Invalid Invitation Modal */}
       {!isValid && (
         <DialogContent>
           <DialogHeader>
@@ -48,19 +57,16 @@ export function InvitationModal({
         </DialogContent>
       )}
 
-      {/* Valid Invitation Modal */}
       {isValid && group && (
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Join Group</DialogTitle>
             <DialogDescription>
-              You’ve been invited to join this group. Please review the group
-              details and rules before joining.
+              Please review the group details and rules before joining.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            {/* Group Info */}
             <div className="rounded-md border p-3">
               <h2 className="text-lg font-semibold">{group.name}</h2>
               <p className="text-muted-foreground text-sm">{group.desc}</p>
@@ -70,7 +76,6 @@ export function InvitationModal({
               </div>
             </div>
 
-            {/* Rules (hardcoded for now) */}
             <div className="bg-muted/30 rounded-md border p-3 text-sm">
               <p className="mb-2 font-semibold">Group Rules</p>
               <ul className="text-muted-foreground list-disc space-y-1 pl-4">
@@ -83,8 +88,11 @@ export function InvitationModal({
           </div>
 
           <DialogFooter>
-            <Button className="btn-hero" onClick={() => onJoin(group.id)}>
-              Join Group
+            <Button
+              className="btn-hero"
+              onClick={() => mutate({ groupId: group.id })}
+            >
+              {isPending ? <Loader className="animate-spin" /> : "Join Group"}
             </Button>
           </DialogFooter>
         </DialogContent>
