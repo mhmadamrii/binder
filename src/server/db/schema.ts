@@ -114,6 +114,7 @@ export const groups = createTable("groups", {
   name: varchar("name", { length: 255 }).notNull(),
   desc: varchar("desc", { length: 255 }).notNull(),
   isPrivate: boolean("is_private").default(false).notNull(),
+  inviteCode: varchar("invite_code", { length: 12 }).unique(),
   ownerId: varchar("owner_id", { length: 255 })
     .references(() => users.id)
     .notNull(),

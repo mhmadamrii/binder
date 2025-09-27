@@ -14,7 +14,7 @@ async function GroupListData() {
 
   return (
     <CardGroups
-      filteredGroups={data.map((item, idx) => {
+      availableGroups={data.map((item, idx) => {
         return {
           id: item.id,
           name: item.name,
@@ -35,7 +35,7 @@ async function PublicGroupListData() {
   return (
     <CardGroups
       isPublic
-      filteredGroups={data.map((item, idx) => {
+      availableGroups={data.map((item, idx) => {
         return {
           id: item.id,
           name: item.name,

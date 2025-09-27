@@ -2,6 +2,7 @@ import { z } from "zod";
 import { groupMembers, groups, users } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { eq, sql } from "drizzle-orm";
+import { generateInviteCode } from "~/lib/utils";
 
 export const groupRouter = createTRPCRouter({
   getAllGroups: protectedProcedure.query(async ({ ctx }) => {
@@ -79,6 +80,7 @@ export const groupRouter = createTRPCRouter({
           desc: input.description,
           isPrivate: input.isPrivate,
           ownerId: ctx.session.user.id,
+          inviteCode: generateInviteCode(12),
         })
         .returning({ id: groups.id });
 
@@ -159,5 +161,15 @@ export const groupRouter = createTRPCRouter({
       });
 
       return { groupId: input.groupId };
+    }),
+
+  checkInvite: protectedProcedure
+    .input(z.object({ inviteCode: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.db.query.groups.findFirst({
+        where: (g, { eq }) => eq(g.inviteCode, input.inviteCode),
+      });
+
+      return group || null;
     }),
 });

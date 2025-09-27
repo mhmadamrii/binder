@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader, PlusCircle, Users } from "lucide-react";
+import { Copy, Loader, PlusCircle, UserPlus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MultiSelectUsers } from "~/components/multi-select-user";
 import { useState } from "react";
@@ -8,7 +8,6 @@ import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
 
 import {
@@ -18,6 +17,12 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+
 type User = {
   id: string;
   name: string | null;
@@ -25,17 +30,27 @@ type User = {
   avatar: string | null;
 };
 
-export function GroupMember({ groupId }: { groupId: string }) {
+export function GroupMember({
+  groupId,
+  invitationCode,
+}: {
+  groupId: string;
+  invitationCode: string;
+}) {
   const router = useRouter();
+  const utils = api.useUtils();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const { data: allMembers, isLoading } = api.user.getAllUsers.useQuery(
-    undefined,
-    {
-      enabled: isOpen,
-    },
-  );
+  const { data: allMembers, isLoading } =
+    api.user.getAllUsersNotInGroup.useQuery(
+      {
+        groupId,
+      },
+      {
+        enabled: isOpen,
+      },
+    );
 
   const { mutate, isPending } = api.group.addMembersToGroup.useMutation({
     onSuccess: () => {
@@ -43,6 +58,7 @@ export function GroupMember({ groupId }: { groupId: string }) {
       setIsOpen(false);
       setSelectedUsers([]);
       router.refresh();
+      utils.invalidate();
     },
   });
 
@@ -74,18 +90,45 @@ export function GroupMember({ groupId }: { groupId: string }) {
           <Separator className="bg-border" />
           <div className="text-center">
             <p className="text-muted-foreground mb-2 text-xs">
-              Or share invite link
+              or share invite link
             </p>
             <div className="flex items-center space-x-2">
-              <Input
-                value={`https://binder.app/join/3`}
-                readOnly
-                className="bg-secondary/50 border-border text-xs"
-                disabled={isLoading}
-              />
-              <Button variant="ghost" size="sm" className="hover:bg-secondary">
-                Copy
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    className="w-1/2"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(
+                        `https://binder-goakal.vercel.app/join?invitationId=${groupId}`,
+                      );
+                      toast.success("Copied to clipboard successfully!");
+                    }}
+                    variant="secondary"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Binder Invite Link</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    className="w-1/2"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(`${invitationCode}`);
+                      toast.success("Copied to clipboard successfully!");
+                    }}
+                    variant="secondary"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Group Invite Code</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </CardContent>
@@ -94,7 +137,7 @@ export function GroupMember({ groupId }: { groupId: string }) {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
+            <DialogTitle>Add New Members to Group</DialogTitle>
           </DialogHeader>
           <MultiSelectUsers
             disabled={isPending || isLoading}

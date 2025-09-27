@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 
+import { CardGroupEmpty } from "./card-group-empty";
 import { CircleCheckBig, HatGlasses, Loader, Users } from "lucide-react";
+import { useQueryState } from "nuqs";
 import { CardContent } from "~/components/ui/card";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
@@ -24,7 +26,7 @@ import {
 
 interface CardGroupsProps {
   isPublic?: boolean;
-  filteredGroups: Array<{
+  availableGroups: Array<{
     id: string;
     name: string;
     lastMessage: string;
@@ -36,13 +38,21 @@ interface CardGroupsProps {
   }>;
 }
 
-export function CardGroups({ filteredGroups, isPublic }: CardGroupsProps) {
+export function CardGroups({ availableGroups, isPublic }: CardGroupsProps) {
+  const [search] = useQueryState("search");
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [isOpenRequestJoin, setIsOpenRequestJoin] = useState(false);
+
+  const filteredGroups = availableGroups.filter((c) =>
+    c.name.toLowerCase().includes(search?.toLowerCase() ?? ""),
+  );
 
   return (
     <CardContent className="flex flex-1 flex-col px-0">
       <ScrollArea className="h-[calc(100vh-310px)]" type="always">
+        {filteredGroups.length === 0 && (
+          <CardGroupEmpty name={search ?? "Groups"} onCreate={() => {}} />
+        )}
         {filteredGroups.map((group, idx) => (
           <Link
             prefetch={true}

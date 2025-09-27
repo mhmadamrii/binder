@@ -6,9 +6,32 @@ import { CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { CreateGroup } from "./create-group";
 import { useState } from "react";
+import { useQueryState } from "nuqs";
+import { api } from "~/trpc/react";
 
 export function CardGroupContent() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [invitation, setInvitation] = useQueryState("invitation", {
+    defaultValue: "",
+  });
+
+  const { mutate: checkInvitation, isPending } =
+    api.group.checkInvite.useMutation({
+      onSuccess: (res) => {
+        /**
+         * res: {
+    id: string;
+    name: string;
+    createdAt: Date;
+    desc: string;
+    isPrivate: boolean;
+    inviteCode: string | null;
+    ownerId: string;
+}
+         */
+        console.log("res", res);
+      },
+    });
   return (
     <>
       <CardContent className="flex flex-1 items-center justify-center">
@@ -28,8 +51,18 @@ export function CardGroupContent() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Input placeholder="Invitation links" />
-            <Button className="cursor-pointer" size="icon">
+            <Input
+              value={invitation ?? ""}
+              onChange={(e) => setInvitation(e.target.value)}
+              placeholder="Invitation links"
+              disabled={isPending}
+            />
+            <Button
+              disabled={isPending}
+              onClick={() => checkInvitation({ inviteCode: invitation })}
+              className="cursor-pointer"
+              size="icon"
+            >
               <Search className="h-4 w-4" />
             </Button>
           </div>

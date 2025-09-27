@@ -31,7 +31,10 @@ async function GroupByIdWithData({ id }: { id: string }) {
         </div>
         <div className="flex w-80 flex-col gap-4">
           <GroupNotes groupId={id} />
-          <GroupMember groupId={id} />
+          <GroupMember
+            groupId={id}
+            invitationCode={data?.inviteCode ?? "Invalid"}
+          />
         </div>
       </div>
     </>

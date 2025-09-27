@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
 
 import { z } from "zod";
-import { users } from "~/server/db/schema";
+import { groupMembers, users } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { db } from "~/server/db";
+import { and, eq, notInArray } from "drizzle-orm";
 
 export const userRouter = createTRPCRouter({
   addNewUser: publicProcedure
@@ -26,10 +27,28 @@ export const userRouter = createTRPCRouter({
         .returning({ id: users.id });
     }),
 
-  getAllUsers: publicProcedure.query(async () => {
-    const allUsers = await db.select().from(users);
-    return allUsers;
-  }),
+  getAllUsers: protectedProcedure
+    .input(z.object({ groupId: z.string() }))
+    .query(async () => {
+      const allUsers = await db.select().from(users);
+      return allUsers;
+    }),
+
+  getAllUsersNotInGroup: protectedProcedure
+    .input(z.object({ groupId: z.string() }))
+    .query(async ({ input }) => {
+      const memberIds = db
+        .select({ userId: groupMembers.userId })
+        .from(groupMembers)
+        .where(eq(groupMembers.groupId, input.groupId));
+
+      const usersNotInGroup = await db
+        .select()
+        .from(users)
+        .where(notInArray(users.id, memberIds));
+
+      return usersNotInGroup;
+    }),
 
   getCurrentUser: protectedProcedure.query(
     async ({ ctx }) => ctx?.session?.user,
