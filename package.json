@@ -61,6 +61,7 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.63.0",
+    "reactjs-tiptap-editor": "^0.3.24",
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "superjson": "^2.2.1",

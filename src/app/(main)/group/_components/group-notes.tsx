@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 
-import { MessageCircle, PlusCircle, SquareArrowOutUpRight } from "lucide-react";
+import {
+  MessageCircle,
+  MoreHorizontal,
+  MoreVertical,
+  PlusCircle,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { format } from "date-fns";
 import { Anonymous_Pro } from "next/font/google";
 import { useEffect, useState } from "react";
@@ -13,6 +19,15 @@ import { api } from "~/trpc/react";
 import { DialogAddNote } from "./dialog-add-note";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 import {
   Tooltip,
@@ -86,6 +101,19 @@ export function GroupNotes({ groupId }: { groupId: string }) {
         <CardTitle className="text-foreground flex items-center justify-between">
           <span>Group Notes</span>
           <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="icon" variant="ghost">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>Menu</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Block Note</DropdownMenuItem>
+                <DropdownMenuItem>Simple Note</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link

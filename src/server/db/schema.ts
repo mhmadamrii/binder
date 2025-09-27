@@ -161,10 +161,10 @@ export const notes = createTable("notes", {
 
 export const noteBlocks = createTable("note_blocks", {
   id: serial("id").primaryKey(),
-  noteId: integer("note_id")
-    .references(() => notes.id)
+  groupId: uuid("group_id")
+    .references(() => groups.id, { onDelete: "cascade" })
     .notNull(),
-  order: integer("order").notNull(),
+  title: text("title").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -208,6 +208,5 @@ export const notesRelations = relations(notes, ({ one, many }) => ({
 }));
 
 export const noteBlocksRelations = relations(noteBlocks, ({ one }) => ({
-  note: one(notes, { fields: [noteBlocks.noteId], references: [notes.id] }),
+  group: one(groups, { fields: [noteBlocks.groupId], references: [groups.id] }),
 }));
-

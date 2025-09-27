@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1758615123337,
-      "tag": "0000_aromatic_eddie_brock",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1758964136927,
-      "tag": "0001_yielding_leader",
+      "when": 1758988253926,
+      "tag": "0000_white_pandemic",
       "breakpoints": true
     }
   ]

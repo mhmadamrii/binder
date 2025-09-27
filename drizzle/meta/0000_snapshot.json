@@ -1,5 +1,5 @@
 {
-  "id": "999fc607-39e1-432e-84ec-53b52279b537",
+  "id": "bfbca276-f7d9-46d0-b404-8d28b1010598",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -163,7 +163,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "group_members_user_id_user_id_fk": {
@@ -215,6 +215,12 @@
           "notNull": true,
           "default": false
         },
+        "invite_code": {
+          "name": "invite_code",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "owner_id": {
           "name": "owner_id",
           "type": "varchar(255)",
@@ -246,7 +252,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "groups_invite_code_unique": {
+          "name": "groups_invite_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "invite_code"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -299,7 +313,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "messages_sender_id_user_id_fk": {
@@ -332,15 +346,15 @@
           "primaryKey": true,
           "notNull": true
         },
-        "note_id": {
-          "name": "note_id",
-          "type": "integer",
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "order": {
-          "name": "order",
-          "type": "integer",
+        "title": {
+          "name": "title",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -360,17 +374,17 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "note_blocks_note_id_notes_id_fk": {
-          "name": "note_blocks_note_id_notes_id_fk",
+        "note_blocks_group_id_groups_id_fk": {
+          "name": "note_blocks_group_id_groups_id_fk",
           "tableFrom": "note_blocks",
-          "tableTo": "notes",
+          "tableTo": "groups",
           "columnsFrom": [
-            "note_id"
+            "group_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -408,6 +422,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "desc": {
+          "name": "desc",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -435,7 +461,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "notes_author_id_user_id_fk": {
@@ -448,7 +474,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
