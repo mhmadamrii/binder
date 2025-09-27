@@ -14,6 +14,7 @@ import { Button } from "~/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
 export default function Note() {
+  const utils = api.useUtils();
   const params = useParams<{ id: string }>();
 
   const [draggableItems, setDraggableItems] = useState<DraggableItem[]>([]);
@@ -22,6 +23,23 @@ export default function Note() {
   const { data: groupNotes } = api.note.getAllGroupNotes.useQuery({
     groupId: params.id,
   });
+
+  const { mutate: updateNoteOrder } = api.note.updateNoteOrder.useMutation({
+    onSuccess: () => {
+      void utils.note.getAllGroupNotes.invalidate();
+    },
+  });
+
+  const handleDragEnd = (newItems: DraggableItem[]) => {
+    console.log("updating");
+    setDraggableItems(newItems);
+    const updatedOrder = newItems.map((item, index) => ({
+      id: item.id,
+      order: index + 1,
+    }));
+
+    updateNoteOrder({ groupId: params.id, updatedOrder });
+  };
 
   const handleSetDefaultGroupNotes = () => {
     if (!groupNotes) return [];
@@ -67,7 +85,7 @@ export default function Note() {
           {draggableItems?.length! > 0 && (
             <SortableList
               items={draggableItems}
-              onChange={setDraggableItems}
+              onChange={handleDragEnd}
               renderItem={(item) => {
                 return (
                   <SortableList.Item id={item.id}>

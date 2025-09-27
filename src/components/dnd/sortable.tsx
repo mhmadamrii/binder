@@ -78,7 +78,7 @@ export function SortableList<T extends BaseItem>({
           const activeIndex = items.findIndex(({ id }) => id === active.id);
           const overIndex = items.findIndex(({ id }) => id === over.id);
           onChange(arrayMove(items, activeIndex, overIndex));
-          toast.success("Moved item");
+          toast.success("Item updated!");
         }
         setActive(null);
       }}

@@ -3,7 +3,6 @@
 import Link from "next/link";
 
 import { MessageCircle, PlusCircle, SquareArrowOutUpRight } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Anonymous_Pro } from "next/font/google";
 import { useEffect, useState } from "react";
@@ -36,11 +35,18 @@ export const anon = Anonymous_Pro({
 });
 
 export function GroupNotes({ groupId }: { groupId: string }) {
+  const utils = api.useUtils();
   const [isOpenCreateNote, setIsOpenCreateNote] = useState(false);
   const [draggableItems, setDraggableItems] = useState<DraggableItem[]>([]);
 
   const { data: groupNotes } = api.note.getAllGroupNotes.useQuery({
     groupId,
+  });
+
+  const { mutate: updateNoteOrder } = api.note.updateNoteOrder.useMutation({
+    onSuccess: () => {
+      void utils.note.getAllGroupNotes.invalidate();
+    },
   });
 
   const handleSetDefaultGroupNotes = () => {
@@ -55,6 +61,17 @@ export function GroupNotes({ groupId }: { groupId: string }) {
         createdAt: item.notes.createdAt,
       })),
     );
+  };
+
+  const handleDragEnd = (newItems: DraggableItem[]) => {
+    console.log("updating");
+    setDraggableItems(newItems);
+    const updatedOrder = newItems.map((item, index) => ({
+      id: item.id,
+      order: index + 1,
+    }));
+
+    updateNoteOrder({ groupId, updatedOrder });
   };
 
   useEffect(() => {
@@ -118,7 +135,7 @@ export function GroupNotes({ groupId }: { groupId: string }) {
           <ScrollArea className="h-[300px] pr-3" type="always">
             <SortableList
               items={draggableItems}
-              onChange={setDraggableItems}
+              onChange={handleDragEnd}
               renderItem={(item) => {
                 return (
                   <SortableList.Item id={item.id}>

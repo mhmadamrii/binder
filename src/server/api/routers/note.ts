@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { notes, users } from "~/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, max } from "drizzle-orm";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
@@ -12,7 +12,8 @@ export const noteRouter = createTRPCRouter({
         .select()
         .from(notes)
         .innerJoin(users, eq(notes.authorId, users.id))
-        .where(eq(notes.groupId, input.groupId));
+        .where(eq(notes.groupId, input.groupId))
+        .orderBy(notes.order);
 
       return allNotes;
     }),
@@ -26,12 +27,39 @@ export const noteRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const [maxOrderNote] = await ctx.db
+        .select({ maxOrder: max(notes.order) })
+        .from(notes)
+        .where(eq(notes.groupId, input.groupId));
+
       await ctx.db.insert(notes).values({
         groupId: input.groupId,
         authorId: ctx.session.user.id,
         title: input.title,
         desc: input.desc,
+        order: (maxOrderNote?.maxOrder ?? 0) + 1,
       });
+    }),
+
+  updateNoteOrder: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string(),
+        updatedOrder: z.array(
+          z.object({
+            id: z.number(),
+            order: z.number(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      for (const { id, order } of input.updatedOrder) {
+        await ctx.db
+          .update(notes)
+          .set({ order })
+          .where(and(eq(notes.id, id), eq(notes.groupId, input.groupId)));
+      }
     }),
 });
 

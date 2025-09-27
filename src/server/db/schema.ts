@@ -153,6 +153,7 @@ export const notes = createTable("notes", {
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   title: varchar("title", { length: 255 }).notNull(),
+  order: integer("order"),
   desc: varchar("desc", { length: 255 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -174,8 +175,39 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  groups: many(groupMembers),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
+
+export const groupsRelations = relations(groups, ({ many }) => ({
+  groupMembers: many(groupMembers),
+  messages: many(messages),
+  notes: many(notes),
+}));
+
+export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupMembers.groupId],
+    references: [groups.id],
+  }),
+  user: one(users, { fields: [groupMembers.userId], references: [users.id] }),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  group: one(groups, { fields: [messages.groupId], references: [groups.id] }),
+  sender: one(users, { fields: [messages.senderId], references: [users.id] }),
+}));
+
+export const notesRelations = relations(notes, ({ one, many }) => ({
+  group: one(groups, { fields: [notes.groupId], references: [groups.id] }),
+  author: one(users, { fields: [notes.authorId], references: [users.id] }),
+  noteBlocks: many(noteBlocks),
+}));
+
+export const noteBlocksRelations = relations(noteBlocks, ({ one }) => ({
+  note: one(notes, { fields: [noteBlocks.noteId], references: [notes.id] }),
+}));
+
