@@ -18,7 +18,7 @@ export function CTAButton({
       <Button
         onClick={() => setShowLogin(true)}
         size="lg"
-        className={cn("btn-hero", className)}
+        className={cn("btn-hero cursor-pointer", className)}
       >
         {children}
       </Button>

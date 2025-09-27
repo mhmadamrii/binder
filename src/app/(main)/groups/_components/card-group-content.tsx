@@ -9,16 +9,17 @@ import { useState } from "react";
 import { useQueryState } from "nuqs";
 import { api } from "~/trpc/react";
 import { InvitationModal } from "./invitation-modal";
-import { isValid } from "date-fns";
+import { toast } from "sonner";
 
 export function CardGroupContent() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [group, setGroup] = useState<any>(null);
+
   const [groupStatus, setGroupStatus] = useState({
     isOpen: false,
     isValid: false,
   });
 
-  const [group, setGroup] = useState<any>(null);
   const [invitation, setInvitation] = useQueryState("invitation", {
     defaultValue: "",
   });
@@ -26,6 +27,10 @@ export function CardGroupContent() {
   const { mutate: checkInvitation, isPending } =
     api.group.checkInvite.useMutation({
       onSuccess: (res) => {
+        console.log(res);
+        if (res?.isJoined) {
+          return toast.error("You are already a member of this group!");
+        }
         if (res?.inviteCode) {
           setGroupStatus((prev) => ({ ...prev, isOpen: true, isValid: true }));
           setGroup(res);
@@ -33,7 +38,6 @@ export function CardGroupContent() {
         if (!res?.inviteCode) {
           setGroupStatus((prev) => ({ ...prev, isOpen: true, isValid: false }));
         }
-        console.log("res", res);
       },
     });
 

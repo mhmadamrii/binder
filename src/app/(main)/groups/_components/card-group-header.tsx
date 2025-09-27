@@ -15,13 +15,6 @@ export function CardGroupHeader() {
   return (
     <>
       <CardHeader className="px-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-foreground flex items-center gap-2">
-            <Users className="text-primary h-4 w-4" />
-            Groups
-          </CardTitle>
-        </div>
-
         <div className="relative">
           <Search className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
           <Input

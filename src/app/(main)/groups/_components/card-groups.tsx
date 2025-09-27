@@ -35,12 +35,18 @@ interface CardGroupsProps {
     members: number;
     isPrivate: boolean;
     isJoined?: boolean;
+    desc: string;
   }>;
 }
 
 export function CardGroups({ availableGroups, isPublic }: CardGroupsProps) {
   const [search] = useQueryState("search");
-  const [selectedGroupId, setSelectedGroupId] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState({
+    name: "",
+    desc: "",
+    membersCount: 0,
+    id: "",
+  });
   const [isOpenRequestJoin, setIsOpenRequestJoin] = useState(false);
 
   const filteredGroups = availableGroups.filter((c) =>
@@ -62,7 +68,12 @@ export function CardGroups({ availableGroups, isPublic }: CardGroupsProps) {
             onClick={(e) => {
               if (isPublic && !group.isJoined) {
                 e.preventDefault();
-                setSelectedGroupId(group.id);
+                setSelectedGroup({
+                  name: group.name,
+                  desc: group.desc,
+                  membersCount: group.members,
+                  id: group.id,
+                });
                 setIsOpenRequestJoin(true);
               }
             }}
@@ -104,9 +115,12 @@ export function CardGroups({ availableGroups, isPublic }: CardGroupsProps) {
         ))}
       </ScrollArea>
       <RequestJoinModal
-        selectedGroupId={selectedGroupId}
+        selectedGroupId={selectedGroup.id}
         open={isOpenRequestJoin}
         onOpenChange={setIsOpenRequestJoin}
+        groupName={selectedGroup.name}
+        groupMembersCount={selectedGroup.membersCount}
+        groupDesc={selectedGroup.desc}
       />
     </CardContent>
   );
@@ -115,10 +129,16 @@ export function CardGroups({ availableGroups, isPublic }: CardGroupsProps) {
 function RequestJoinModal({
   selectedGroupId,
   open,
+  groupName,
+  groupDesc,
+  groupMembersCount,
   onOpenChange,
 }: {
   selectedGroupId: string;
   open: boolean;
+  groupName: string;
+  groupDesc: string;
+  groupMembersCount: number;
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
@@ -126,7 +146,7 @@ function RequestJoinModal({
   const { mutate, isPending } = api.group.addCurrentUserToGroup.useMutation({
     onSuccess: (res) => {
       router.push(`/group/${res.groupId}`);
-      toast.success("User added to group successfully!");
+      toast.success(`Successfully joined ${groupName}`);
     },
   });
 
@@ -134,18 +154,37 @@ function RequestJoinModal({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogTitle>Join Group</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            Please review the group details and rules before joining.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="rounded-md border p-3">
+            <h2 className="text-lg font-semibold">{groupName}</h2>
+            <p className="text-muted-foreground text-sm">{groupDesc}</p>
+            <div className="text-muted-foreground mt-2 flex items-center gap-1 text-sm">
+              <Users className="h-4 w-4" />
+              {groupMembersCount} members
+            </div>
+          </div>
+
+          <div className="bg-muted/30 rounded-md border p-3 text-sm">
+            <p className="mb-2 font-semibold">Group Rules</p>
+            <ul className="text-muted-foreground list-disc space-y-1 pl-4">
+              <li>No racist content</li>
+              <li>No pornographic material</li>
+              <li>Respect other members</li>
+              <li>No spam or self-promotion</li>
+            </ul>
+          </div>
+        </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => mutate({ groupId: selectedGroupId })}
           >
-            {isPending ? <Loader className="animate-spin" /> : "Proceed"}
+            {isPending ? <Loader className="animate-spin" /> : "Join"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

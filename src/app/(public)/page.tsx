@@ -15,11 +15,6 @@ export default async function Public() {
     <div className="bg-background min-h-screen">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img
-            src="/hero-image.jpg"
-            alt="Binder Hero"
-            className="h-full w-full object-cover opacity-20"
-          />
           <div className="from-background/90 to-background/60 absolute inset-0 bg-gradient-to-br" />
         </div>
         <div className="relative z-10 container mx-auto px-4 py-24 text-center">

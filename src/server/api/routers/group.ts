@@ -166,10 +166,44 @@ export const groupRouter = createTRPCRouter({
   checkInvite: protectedProcedure
     .input(z.object({ inviteCode: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const group = await ctx.db.query.groups.findFirst({
-        where: (g, { eq }) => eq(g.inviteCode, input.inviteCode),
+      const result = await ctx.db
+        .select({
+          id: groups.id,
+          name: groups.name,
+          desc: groups.desc,
+          isPrivate: groups.isPrivate,
+          ownerId: groups.ownerId,
+          inviteCode: groups.inviteCode,
+          createdAt: groups.createdAt,
+          membersCount: sql<number>`COUNT(${groupMembers.id})`.as(
+            "members_count",
+          ),
+        })
+        .from(groups)
+        .leftJoin(groupMembers, eq(groups.id, groupMembers.groupId))
+        .where(eq(groups.inviteCode, input.inviteCode))
+        .groupBy(
+          groups.id,
+          groups.name,
+          groups.desc,
+          groups.isPrivate,
+          groups.ownerId,
+          groups.inviteCode,
+          groups.createdAt,
+        );
+
+      if (!result[0]) return null;
+
+      const group = result[0];
+
+      const existingMember = await ctx.db.query.groupMembers.findFirst({
+        where: (gm, { eq, and }) =>
+          and(eq(gm.groupId, group.id), eq(gm.userId, ctx.session.user.id)),
       });
 
-      return group || null;
+      return {
+        ...group,
+        isJoined: !!existingMember,
+      };
     }),
 });

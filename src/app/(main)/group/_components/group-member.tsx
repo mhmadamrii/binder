@@ -101,7 +101,7 @@ export function GroupMember({
                       await navigator.clipboard.writeText(
                         `https://binder-goakal.vercel.app/join?invitationId=${groupId}`,
                       );
-                      toast.success("Copied to clipboard successfully!");
+                      toast.success("Copied to clipboard!");
                     }}
                     variant="secondary"
                   >
@@ -118,7 +118,7 @@ export function GroupMember({
                     className="w-1/2"
                     onClick={async () => {
                       await navigator.clipboard.writeText(`${invitationCode}`);
-                      toast.success("Copied to clipboard successfully!");
+                      toast.success("Copied to clipboard!");
                     }}
                     variant="secondary"
                   >

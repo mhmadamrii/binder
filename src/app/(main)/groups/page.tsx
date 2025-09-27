@@ -23,6 +23,7 @@ async function GroupListData() {
           isPrivate: item.isPrivate,
           unread: 0,
           members: item.membersCount,
+          desc: item.desc,
         };
       })}
     />
@@ -45,6 +46,7 @@ async function PublicGroupListData() {
           unread: 0,
           members: item.membersCount,
           isJoined: item.isJoined,
+          desc: item.desc,
         };
       })}
     />

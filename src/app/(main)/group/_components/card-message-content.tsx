@@ -37,6 +37,7 @@ export function CardMessageContent() {
 
   const { sendMessage: send } = useMessages({
     listener: (event) => {
+      console.log("event", event.message);
       setMessages((prev) => [
         ...prev,
         {
