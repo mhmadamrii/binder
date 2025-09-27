@@ -125,8 +125,12 @@ export function CardMessageContent() {
                 <div className="flex items-end gap-2">
                   <p className="text-sm">{msg.content}</p>
                   <p className="mt-1 flex gap-1 text-xs opacity-60">
-                    {msg.timestamp}
-                    {msg.isOwn && <CheckCheck className="h-4 w-4" />}
+                    {msg.timestamp == "saving..." ? "00:00" : msg.timestamp}
+                    {msg.isOwn && msg.timestamp == "saving..." ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <CheckCheck className="h-4 w-4" />
+                    )}
                   </p>
                 </div>
               </div>

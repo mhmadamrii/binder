@@ -67,7 +67,7 @@ export function CardGroupContent() {
               disabled={isPending}
             />
             <Button
-              disabled={isPending}
+              disabled={isPending || invitation == ""}
               onClick={() => checkInvitation({ inviteCode: invitation })}
               className="cursor-pointer"
               size="icon"
