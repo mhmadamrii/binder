@@ -115,7 +115,7 @@ export function GroupNotes({ groupId }: { groupId: string }) {
           </div>
         )}
         {draggableItems?.length! > 0 && (
-          <ScrollArea className="h-[300px] pr-3">
+          <ScrollArea className="h-[300px] pr-3" type="always">
             <SortableList
               items={draggableItems}
               onChange={setDraggableItems}

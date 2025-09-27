@@ -1,5 +1,5 @@
 import { Loader, Notebook, PlusCircle } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -29,6 +29,7 @@ export function DialogAddNote({
   setIsOpenCreateNote: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const params = useParams<{ id: string }>();
+  const pathname = usePathname();
   const utils = api.useUtils();
 
   const [note, setNote] = useState({
@@ -47,21 +48,23 @@ export function DialogAddNote({
 
   return (
     <Dialog open={isOpenCreateNote} onOpenChange={setIsOpenCreateNote}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            onClick={() => setIsOpenCreateNote(true)}
-            size="sm"
-            variant="ghost"
-            className="hover:bg-secondary cursor-pointer"
-          >
-            <PlusCircle className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Add New Note</p>
-        </TooltipContent>
-      </Tooltip>
+      {!pathname.includes("notes") && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() => setIsOpenCreateNote(true)}
+              size="sm"
+              variant="ghost"
+              className="hover:bg-secondary cursor-pointer"
+            >
+              <PlusCircle className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Add New Note</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
 
       <DialogContent>
         <DialogHeader>

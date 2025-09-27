@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { SlashIcon } from "lucide-react";
 import {
   Breadcrumb,
@@ -8,25 +10,33 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 
-export function GroupNoteBreadcrumbs() {
+export function GroupNoteBreadcrumbs({ groupId }: { groupId: string }) {
   return (
-    <div className="flex w-full justify-center p-6">
+    <div className="flex w-full justify-start p-6">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink>Groups</BreadcrumbLink>
+            <BreadcrumbLink asChild>
+              <Link prefetch={true} href={`/groups`}>
+                Groups
+              </Link>
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator>
             <SlashIcon />
           </BreadcrumbSeparator>
           <BreadcrumbItem>
-            <BreadcrumbLink>Components</BreadcrumbLink>
+            <BreadcrumbLink asChild>
+              <Link prefetch={true} href={`/group/${groupId}`}>
+                Group Chat
+              </Link>
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator>
             <SlashIcon />
           </BreadcrumbSeparator>
           <BreadcrumbItem>
-            <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+            <BreadcrumbPage>Notes</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
