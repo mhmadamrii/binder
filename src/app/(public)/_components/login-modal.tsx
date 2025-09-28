@@ -220,7 +220,9 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         <Button
           onClick={() => {
             setIsLoadingDc(true);
-            signIn("discord");
+            signIn("discord", {
+              redirectTo: "/groups",
+            });
           }}
           variant="outline"
           className="border-border hover:bg-secondary hover:text-secondary-foreground w-full cursor-pointer"
