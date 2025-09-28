@@ -133,10 +133,6 @@ export function GroupNotes({ groupId }: { groupId: string }) {
                 <p>Show All Notes</p>
               </TooltipContent>
             </Tooltip>
-            {/* <DialogAddNote
-              isOpenCreateNote={isOpenCreateNote}
-              setIsOpenCreateNote={setIsOpenCreateNote}
-            /> */}
           </div>
         </CardTitle>
       </CardHeader>
@@ -165,7 +161,12 @@ export function GroupNotes({ groupId }: { groupId: string }) {
             </Button>
           </div>
         )}
-        {noteMode === "block" && <ReadOnlyEditorClient />}
+        {noteMode === "block" && (
+          <ScrollArea className="h-[300px] pr-3" type="always">
+            <ReadOnlyEditorClient groupId={groupId} />
+          </ScrollArea>
+        )}
+
         {noteMode === "simple" && draggableItems?.length! > 0 && (
           <ScrollArea className="h-[300px] pr-3" type="always">
             <SortableList

@@ -4,7 +4,7 @@
 /* eslint-disable quotes */
 import RichTextEditor, { BaseKit } from "reactjs-tiptap-editor";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DEFAULT_BINDER_NOTE } from "~/lib/note-default";
 
 import "reactjs-tiptap-editor/style.css";
@@ -24,6 +24,7 @@ import { Italic } from "reactjs-tiptap-editor/lib/Italic.js";
 import { Color } from "reactjs-tiptap-editor/lib/Color.js";
 import { TextAlign } from "reactjs-tiptap-editor/lib/TextAlign.js";
 import { TaskList } from "reactjs-tiptap-editor/lib/TaskList.js";
+import { api } from "~/trpc/react";
 
 const extensions = [
   BaseKit.configure({
@@ -55,16 +56,29 @@ const extensions = [
   }),
 ];
 
-export default function ReadOnlyEditor() {
-  const [content, setContent] = useState(DEFAULT_BINDER_NOTE);
+export default function ReadOnlyEditor({ groupId }: { groupId: string }) {
+  const { data: initialNoteBlock } = api.note.getNoteBlockByGroupId.useQuery({
+    groupId,
+  });
+
+  console.log("initialNoteBlock", initialNoteBlock);
+
+  const editorRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (initialNoteBlock?.content && editorRef.current) {
+      editorRef.current.commands.setContent(initialNoteBlock.content);
+    }
+  }, [initialNoteBlock, editorRef]);
+
   return (
     <section className="h-full">
       <div className="editor-wrapper">
         <RichTextEditor
-          contentClass="p-4"
+          // @ts-expect-error
+          editorRef={editorRef}
           output="html"
-          content={content as any}
-          onChangeContent={() => {}}
+          content={initialNoteBlock?.content ?? DEFAULT_BINDER_NOTE}
           extensions={extensions}
           dark
           disabled

@@ -2,10 +2,9 @@
 
 /* eslint-disable unicorn/no-null */
 /* eslint-disable quotes */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import RichTextEditor, { BaseKit } from "reactjs-tiptap-editor";
 
-import { toast } from "sonner";
 import { DEFAULT_BINDER_NOTE, DEFAULT_RESET } from "~/lib/note-default";
 import { Blockquote } from "reactjs-tiptap-editor/blockquote";
 import { Bold } from "reactjs-tiptap-editor/bold";
@@ -28,9 +27,8 @@ import { Table } from "reactjs-tiptap-editor/table";
 import { TaskList } from "reactjs-tiptap-editor/tasklist";
 import { TextAlign } from "reactjs-tiptap-editor/textalign";
 import { TextDirection } from "reactjs-tiptap-editor/textdirection";
-import { Button } from "../ui/button";
 import { api } from "~/trpc/react";
-import { Loader } from "lucide-react";
+import { CheckCheck, Loader, Loader2 } from "lucide-react";
 
 import "reactjs-tiptap-editor/style.css";
 import "prism-code-editor-lightweight/layout.css";
@@ -80,82 +78,75 @@ const extensions = [
   Mention,
 ];
 
-function debounce(func: any, wait: number) {
+function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number,
+): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
-  return function (...args: any[]) {
+  return function (...args: Parameters<T>) {
     clearTimeout(timeout);
-    // @ts-ignore
-    timeout = setTimeout(() => func.apply(this, args), wait);
+    timeout = setTimeout(() => func(...args), wait);
   };
 }
 
 export default function TipTapEditor({ groupId }: { groupId: string }) {
-  const [content, setContent] = useState(DEFAULT_BINDER_NOTE);
-  const [initialized, setInitialized] = useState(false);
-
+  const utils = api.useUtils();
   const { mutate: updateNote, isPending } =
     api.note.updateNoteBlock.useMutation({
       onSuccess: () => {
-        toast.success("Note block updated successfully!");
+        utils.invalidate();
       },
     });
 
-  const onValueChange = useCallback(
-    debounce((value: string) => {
-      setContent(value);
+  const { data: initialNoteBlock, isLoading } =
+    api.note.getNoteBlockByGroupId.useQuery({
+      groupId,
+    });
 
-      // Only save if the editor is already initialized
-      if (initialized) {
-        updateNote({
-          groupId,
-          title: "note block",
-          content: value,
-        });
-      }
+  const editorRef = useRef<any>(null);
+
+  const debouncedUpdate = useCallback(
+    debounce((value: string) => {
+      updateNote({ groupId, title: "note block", content: value });
     }, 1000),
-    [updateNote, groupId, initialized],
+    [updateNote, groupId],
   );
 
-  const { data: initialNoteBlock } = api.note.getNoteBlockByGroupId.useQuery({
-    groupId,
-  });
-
   useEffect(() => {
-    if (initialNoteBlock) {
-      setContent(initialNoteBlock.content);
-      setInitialized(true); // mark editor ready, next changes will trigger autosave
+    if (initialNoteBlock?.content && editorRef.current) {
+      editorRef.current.commands.setContent(initialNoteBlock.content);
     }
-  }, [initialNoteBlock]);
-  return (
-    <section className="container mx-auto flex min-h-[600px] flex-col gap-4 p-4">
-      <RichTextEditor
-        key={initialNoteBlock?.id} // stable between keystrokes
-        output="html"
-        content={content}
-        onChangeContent={onValueChange}
-        extensions={extensions}
-        dark
-        bubbleMenu={{
-          render({}, bubbleDefaultDom) {
-            return <>{bubbleDefaultDom}</>;
-          },
-        }}
-      />
+  }, [initialNoteBlock, editorRef]);
 
-      <div className="flex w-full justify-end">
-        <Button
-          onClick={() =>
-            updateNote({
-              groupId,
-              title: "note block",
-              content,
-            })
-          }
-          className="w-[300px]"
-        >
-          {isPending ? <Loader className="animate-spin" /> : "Save"}
-        </Button>
-      </div>
-    </section>
+  return (
+    <>
+      {isLoading ? (
+        <div className="flex h-screen w-full items-center justify-center">
+          <Loader className="animate-spin" />
+        </div>
+      ) : (
+        <section className="flex min-h-[600px] flex-col gap-4 p-4">
+          <div className="flex h-[60px] w-full items-center justify-end">
+            {isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <div className="flex items-center gap-2">
+                <CheckCheck className="h-4 w-4 text-green-500" />
+                <span className="text-muted-foreground text-[12px]">Saved</span>
+              </div>
+            )}
+          </div>
+          <RichTextEditor
+            // @ts-expect-error
+            editorRef={editorRef}
+            output="html"
+            extensions={extensions}
+            dark
+            content={initialNoteBlock?.content ?? DEFAULT_BINDER_NOTE}
+            onChangeContent={debouncedUpdate}
+          />
+        </section>
+      )}
+    </>
   );
 }

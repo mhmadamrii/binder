@@ -127,4 +127,17 @@
 
 .editor-wrapper .tiptap.ProseMirror {
   padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.editor-wrapper .richtext-overflow-hidden {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.tiptap {
+  /* background: red !important; */
 }

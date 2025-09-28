@@ -21,6 +21,6 @@ export const EditorClient = ({ groupId }: { groupId: string }) => {
   return <TipTapEditor groupId={groupId} />;
 };
 
-export const ReadOnlyEditorClient = () => {
-  return <ReadOnlyEditor />;
+export const ReadOnlyEditorClient = ({ groupId }: { groupId: string }) => {
+  return <ReadOnlyEditor groupId={groupId} />;
 };
