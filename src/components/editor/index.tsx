@@ -2,9 +2,10 @@
 
 /* eslint-disable unicorn/no-null */
 /* eslint-disable quotes */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import RichTextEditor, { BaseKit } from "reactjs-tiptap-editor";
 
+import { toast } from "sonner";
 import { DEFAULT_BINDER_NOTE, DEFAULT_RESET } from "~/lib/note-default";
 import { Blockquote } from "reactjs-tiptap-editor/blockquote";
 import { Bold } from "reactjs-tiptap-editor/bold";
@@ -27,6 +28,9 @@ import { Table } from "reactjs-tiptap-editor/table";
 import { TaskList } from "reactjs-tiptap-editor/tasklist";
 import { TextAlign } from "reactjs-tiptap-editor/textalign";
 import { TextDirection } from "reactjs-tiptap-editor/textdirection";
+import { Button } from "../ui/button";
+import { api } from "~/trpc/react";
+import { Loader } from "lucide-react";
 
 import "reactjs-tiptap-editor/style.css";
 import "prism-code-editor-lightweight/layout.css";
@@ -46,27 +50,14 @@ const extensions = [
       limit: 50_000,
     },
   }),
-  // History,
-  // SearchAndReplace,
-  // TableOfContents,
   FormatPainter.configure({ spacer: true }),
   Clear,
-  // FontFamily,
   Heading.configure({ spacer: true }),
   FontSize,
   Bold,
   Italic,
-  // TextUnderline,
-  // Strike,
-  // MoreMark,
-  // Emoji,
   Color.configure({ spacer: true }),
-  // Highlight,
-  // BulletList,
-  // OrderedList,
   TextAlign.configure({ types: ["heading", "paragraph"], spacer: true }),
-  // Indent,
-  // LineHeight,
   TaskList.configure({
     spacer: true,
     taskItem: {
@@ -87,37 +78,6 @@ const extensions = [
   ExportPdf.configure({ spacer: true }),
   TextDirection,
   Mention,
-  // Katex,
-  // Excalidraw,
-  // Mermaid.configure({
-  //   upload: (file: any) => {
-  //     // fake upload return base 64
-  //     const reader = new FileReader();
-  //     reader.readAsDataURL(file);
-
-  //     return new Promise((resolve) => {
-  //       setTimeout(() => {
-  //         const blob = convertBase64ToBlob(reader.result as string);
-  //         resolve(URL.createObjectURL(blob));
-  //       }, 300);
-  //     });
-  //   },
-  // }),
-  // Drawer.configure({
-  //   upload: (file: any) => {
-  //     // fake upload return base 64
-  //     const reader = new FileReader();
-  //     reader.readAsDataURL(file);
-
-  //     return new Promise((resolve) => {
-  //       setTimeout(() => {
-  //         const blob = convertBase64ToBlob(reader.result as string);
-  //         resolve(URL.createObjectURL(blob));
-  //       }, 300);
-  //     });
-  //   },
-  // }),
-  // Twitter,
 ];
 
 function debounce(func: any, wait: number) {
@@ -129,34 +89,62 @@ function debounce(func: any, wait: number) {
   };
 }
 
-export default function TipTapEditor() {
+export default function TipTapEditor({ groupId }: { groupId: string }) {
   const [content, setContent] = useState(DEFAULT_BINDER_NOTE);
-  const [disable, setDisable] = useState(false);
 
   const onValueChange = useCallback(
     debounce((value: any) => {
       console.log("value", value);
       setContent(value);
-    }, 300),
+    }, 1000),
     [],
   );
 
+  const { data: initialNoteBlock } = api.note.getNoteBlockByGroupId.useQuery({
+    groupId,
+  });
+
+  const { mutate: updateNote, isPending } =
+    api.note.updateNoteBlock.useMutation({
+      onSuccess: () => {
+        toast.success("Note block updated successfully!");
+      },
+    });
+
+  useEffect(() => {
+    if (initialNoteBlock) {
+      setContent(initialNoteBlock.content);
+    }
+  }, [initialNoteBlock]);
+
   return (
-    <section className="min-h-[600px] border border-red-500 p-4">
-      <div className="w-full">
-        <RichTextEditor
-          output="html"
-          content={content as any}
-          onChangeContent={onValueChange}
-          extensions={extensions}
-          dark
-          disabled={disable}
-          bubbleMenu={{
-            render({ extensionsNames, editor, disabled }, bubbleDefaultDom) {
-              return <>{bubbleDefaultDom}</>;
-            },
-          }}
-        />
+    <section className="container mx-auto flex min-h-[600px] flex-col gap-4 p-4">
+      <RichTextEditor
+        key={content}
+        output="html"
+        content={content as any}
+        onChangeContent={onValueChange}
+        extensions={extensions}
+        dark
+        bubbleMenu={{
+          render({}, bubbleDefaultDom) {
+            return <>{bubbleDefaultDom}</>;
+          },
+        }}
+      />
+      <div className="flex w-full justify-end">
+        <Button
+          onClick={() =>
+            updateNote({
+              groupId,
+              title: "note block",
+              content,
+            })
+          }
+          className="w-[300px]"
+        >
+          {isPending ? <Loader className="animate-spin" /> : "Save"}
+        </Button>
       </div>
     </section>
   );

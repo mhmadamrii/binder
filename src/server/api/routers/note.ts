@@ -57,6 +57,35 @@ export const noteRouter = createTRPCRouter({
       });
     }),
 
+  updateNoteBlock: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string(),
+        title: z.string().min(1),
+        content: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(noteBlocks)
+        .set({
+          title: input.title,
+          content: input.content,
+        })
+        .where(eq(noteBlocks.groupId, input.groupId));
+    }),
+
+  getNoteBlockByGroupId: protectedProcedure
+    .input(z.object({ groupId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const noteBlock = await ctx.db
+        .select()
+        .from(noteBlocks)
+        .where(eq(noteBlocks.groupId, input.groupId));
+
+      return noteBlock[0];
+    }),
+
   updateNoteOrder: protectedProcedure
     .input(
       z.object({

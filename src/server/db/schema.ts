@@ -204,7 +204,6 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 export const notesRelations = relations(notes, ({ one, many }) => ({
   group: one(groups, { fields: [notes.groupId], references: [groups.id] }),
   author: one(users, { fields: [notes.authorId], references: [users.id] }),
-  noteBlocks: many(noteBlocks),
 }));
 
 export const noteBlocksRelations = relations(noteBlocks, ({ one }) => ({

@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 
-import {
-  MessageCircle,
-  MoreHorizontal,
-  MoreVertical,
-  PlusCircle,
-  SquareArrowOutUpRight,
-} from "lucide-react";
+import { ReadOnlyEditorClient } from "~/components/editor/editor-client";
 import { format } from "date-fns";
 import { Anonymous_Pro } from "next/font/google";
 import { useEffect, useState } from "react";
@@ -19,6 +13,13 @@ import { api } from "~/trpc/react";
 import { DialogAddNote } from "./dialog-add-note";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+
+import {
+  MessageCircle,
+  MoreHorizontal,
+  PlusCircle,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 
 import {
   DropdownMenu,
@@ -51,6 +52,7 @@ export const anon = Anonymous_Pro({
 
 export function GroupNotes({ groupId }: { groupId: string }) {
   const utils = api.useUtils();
+  const [noteMode, setNoteMode] = useState<"block" | "simple">("block");
   const [isOpenCreateNote, setIsOpenCreateNote] = useState(false);
   const [draggableItems, setDraggableItems] = useState<DraggableItem[]>([]);
 
@@ -110,15 +112,19 @@ export function GroupNotes({ groupId }: { groupId: string }) {
               <DropdownMenuContent>
                 <DropdownMenuLabel>Menu</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Block Note</DropdownMenuItem>
-                <DropdownMenuItem>Simple Note</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setNoteMode("block")}>
+                  Block Note
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setNoteMode("simple")}>
+                  Simple Note
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   className="hover:bg-secondary block"
-                  href={`/group/${groupId}/notes`}
+                  href={`/group/${groupId}/notes?type=${noteMode}`}
                 >
                   <SquareArrowOutUpRight className="h-4 w-4" />
                 </Link>
@@ -127,10 +133,10 @@ export function GroupNotes({ groupId }: { groupId: string }) {
                 <p>Show All Notes</p>
               </TooltipContent>
             </Tooltip>
-            <DialogAddNote
+            {/* <DialogAddNote
               isOpenCreateNote={isOpenCreateNote}
               setIsOpenCreateNote={setIsOpenCreateNote}
-            />
+            /> */}
           </div>
         </CardTitle>
       </CardHeader>
@@ -159,7 +165,8 @@ export function GroupNotes({ groupId }: { groupId: string }) {
             </Button>
           </div>
         )}
-        {draggableItems?.length! > 0 && (
+        {noteMode === "block" && <ReadOnlyEditorClient />}
+        {noteMode === "simple" && draggableItems?.length! > 0 && (
           <ScrollArea className="h-[300px] pr-3" type="always">
             <SortableList
               items={draggableItems}

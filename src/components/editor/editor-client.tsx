@@ -17,8 +17,8 @@ const ReadOnlyEditor = dynamic(
   },
 );
 
-export const EditorClient = () => {
-  return <TipTapEditor />;
+export const EditorClient = ({ groupId }: { groupId: string }) => {
+  return <TipTapEditor groupId={groupId} />;
 };
 
 export const ReadOnlyEditorClient = () => {
