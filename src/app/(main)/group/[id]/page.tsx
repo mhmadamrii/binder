@@ -17,19 +17,21 @@ async function GroupByIdWithData({ id }: { id: string }) {
         groupDescription={data?.desc}
         membersCount={data?.members.length}
       />
-      <div className="flex flex-1 gap-4 px-4 py-4">
+      <div className="flex flex-1 flex-col gap-4 px-4 py-4 sm:flex-row">
         <div className="flex flex-1 flex-col">
-          <Card className="card-gradient border-border flex flex-1 flex-col">
+          <Card className="card-gradient border-border flex flex-1 flex-col justify-between gap-0">
             <CardHeader className="border-border border-b">
               <CardTitle className="text-foreground flex items-center">
                 <MessageCircle className="text-primary mr-2 h-5 w-5" />
                 Messages
               </CardTitle>
             </CardHeader>
-            <GroupMessage groupId={id} />
+            <div>
+              <GroupMessage groupId={id} />
+            </div>
           </Card>
         </div>
-        <div className="flex w-80 flex-col gap-4">
+        <div className="flex w-full flex-col gap-4 sm:w-80">
           <GroupNotes groupId={id} />
           <GroupMember
             groupId={id}

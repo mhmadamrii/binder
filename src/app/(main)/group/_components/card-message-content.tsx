@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { CardContent } from "~/components/ui/card";
+import { CardContent, CardFooter } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
@@ -17,13 +17,13 @@ export function CardMessageContent() {
 
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<
-    {
+    Array<{
       id: number;
       content: string;
       sender: string;
       timestamp: string;
       isOwn: boolean;
-    }[]
+    }>
   >([]);
 
   const { mutate: createMessage } = api.message.createMessage.useMutation({
@@ -43,9 +43,9 @@ export function CardMessageContent() {
         {
           id: -Math.round(Math.random() * 1000000),
           content: event.message.text,
-          sender: "",
+          sender: user?.name ?? "Anonymous",
           timestamp: "saving...",
-          isOwn: true,
+          isOwn: event.message.metadata.senderId == user?.id,
         },
       ]);
     },
@@ -61,8 +61,8 @@ export function CardMessageContent() {
       await send({
         text: newMessage,
         metadata: {
-          userId: user?.id,
           type: "text",
+          senderId: user?.id,
         },
       });
       createMessage({
@@ -74,6 +74,7 @@ export function CardMessageContent() {
       console.error("error sending message", error);
     }
   };
+  console.log("previousMessages", previousMessages);
 
   const handleSetDefaultMessages = () => {
     if (!previousMessages) return [];
@@ -91,88 +92,99 @@ export function CardMessageContent() {
   }, [messages]);
 
   return (
-    <CardContent className="flex h-[calc(100vh-250px)] flex-col p-0">
-      <ScrollArea className="h-[calc(100vh-100px)] overflow-y-auto px-4 pb-4">
+    <CardContent className="flex flex-1 flex-col p-0">
+      <ScrollArea className="h-[calc(100vh-290px)] overflow-y-auto px-4 pb-4">
         <div className="space-y-4">
           {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex items-end gap-2 ${
-                msg.isOwn ? "justify-end" : "justify-start"
-              }`}
-            >
-              {!msg.isOwn && (
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={msg.sender ?? ""} alt={msg.sender} />
-                  <AvatarFallback>
-                    {msg.sender?.[0]?.toUpperCase() ?? "?"}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-
-              <div
-                className={`max-w-xs rounded-lg px-4 py-2 lg:max-w-lg ${
-                  msg.isOwn
-                    ? "bg-primary text-primary-foreground rounded-br-none"
-                    : "bg-secondary text-secondary-foreground rounded-bl-none"
-                }`}
-              >
-                {!msg.isOwn && (
-                  <p className="mb-1 text-xs font-semibold opacity-70">
-                    {msg.sender}
-                  </p>
-                )}
-                <div className="flex items-end gap-2">
-                  <p className="text-sm">{msg.content}</p>
-                  <p className="mt-1 flex gap-1 text-xs opacity-60">
-                    {msg.timestamp == "saving..." ? "00:00" : msg.timestamp}
-                    {msg.isOwn && msg.timestamp == "saving..." ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <CheckCheck className="h-4 w-4" />
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              {msg.isOwn && (
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={msg.sender ?? ""} alt={user?.name ?? ""} />
-                  <AvatarFallback>
-                    {user?.name?.[0]?.toUpperCase() ?? "?"}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-            </div>
+            <ChatMessage key={msg.id} msg={msg} user={user} />
           ))}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
       <Separator className="bg-border" />
-      <form className="p-4">
-        <div className="flex items-center space-x-2">
-          <Button type="button" variant="ghost" size="sm">
-            <Paperclip className="h-4 w-4" />
-          </Button>
-          <Input
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSendMessage(e)}
-            className="bg-input border-border focus:ring-ring flex-1"
-          />
-          <Button type="button" variant="ghost" size="sm">
-            <Smile className="h-4 w-4" />
-          </Button>
-          <Button
-            onClick={(e) => handleSendMessage(e)}
-            type="button"
-            className="btn-hero"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </form>
+      <CardFooter>
+        <form className="w-full p-4">
+          <div className="flex items-center space-x-2">
+            <Button type="button" variant="ghost" size="sm">
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Input
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage(e)}
+              className="bg-input border-border focus:ring-ring flex-1"
+            />
+            <Button type="button" variant="ghost" size="sm">
+              <Smile className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={(e) => handleSendMessage(e)}
+              type="button"
+              className="btn-hero"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </form>
+      </CardFooter>
     </CardContent>
   );
 }
+
+const AvatarBubble = ({ name, src }: { name?: string; src?: string }) => (
+  <Avatar className="h-6 w-6">
+    <AvatarImage src={src ?? ""} alt={name ?? ""} />
+    <AvatarFallback>{name?.[0]?.toUpperCase() ?? "?"}</AvatarFallback>
+  </Avatar>
+);
+
+const MessageMeta = ({
+  isOwn,
+  timestamp,
+}: {
+  isOwn: boolean;
+  timestamp: string;
+}) => {
+  const displayTime = timestamp === "saving..." ? "00:00" : timestamp;
+  const Icon = isOwn && timestamp === "saving..." ? Check : CheckCheck;
+
+  return (
+    <p className="mt-1 flex gap-1 text-xs opacity-60">
+      {displayTime}
+      <Icon className="h-4 w-4" />
+    </p>
+  );
+};
+
+const ChatMessage = ({ msg, user }: { msg: any; user: any }) => {
+  const isOwn = msg.isOwn;
+
+  const wrapperClasses = `flex items-end gap-2 ${
+    isOwn ? "justify-end" : "justify-start"
+  }`;
+
+  const bubbleClasses = `max-w-xs rounded-lg px-4 py-2 lg:max-w-lg ${
+    isOwn
+      ? "bg-primary text-primary-foreground rounded-br-none"
+      : "bg-secondary text-secondary-foreground rounded-bl-none"
+  }`;
+
+  return (
+    <div key={msg.id} className={wrapperClasses}>
+      {!isOwn && <AvatarBubble name={msg.sender} src={msg.sender} />}
+
+      <div className={bubbleClasses}>
+        {!isOwn && (
+          <p className="mb-1 text-xs font-semibold opacity-70">{msg.sender}</p>
+        )}
+        <div className="flex items-end gap-2">
+          <p className="text-sm">{msg.content}</p>
+          <MessageMeta isOwn={isOwn} timestamp={msg.timestamp} />
+        </div>
+      </div>
+
+      {isOwn && <AvatarBubble name={user?.name} src={msg.sender} />}
+    </div>
+  );
+};

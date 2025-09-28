@@ -14,8 +14,8 @@ export function GroupHeader({
   membersCount?: number;
 }) {
   return (
-    <header className="border-border bg-card/50 border-b backdrop-blur-sm">
-      <div className="px-4 py-4">
+    <header className="bg-card/50 flex h-[60px] items-center border-b backdrop-blur-sm">
+      <div className="w-full px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link prefetch={true} href="/groups">
@@ -29,16 +29,16 @@ export function GroupHeader({
             </Link>
 
             <div className="flex items-center space-x-3">
-              <div className="from-primary to-primary-glow flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br">
+              {/* <div className="from-primary to-primary-glow flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br">
                 <MessageCircle className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-foreground text-xl font-bold">
+              </div> */}
+              <div className="flex flex-col gap-0">
+                <span className="text-foreground text-xl font-bold">
                   {groupName || "-"}
-                </h1>
-                <p className="text-muted-foreground text-sm">
+                </span>
+                <span className="text-muted-foreground text-[12px]">
                   {groupDescription}
-                </p>
+                </span>
               </div>
             </div>
           </div>

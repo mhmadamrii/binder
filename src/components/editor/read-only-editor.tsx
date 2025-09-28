@@ -63,8 +63,6 @@ export default function ReadOnlyEditor({ groupId }: { groupId: string }) {
       groupId,
     });
 
-  console.log("initialNoteBlock", initialNoteBlock);
-
   const editorRef = useRef<any>(null);
 
   useEffect(() => {
