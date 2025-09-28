@@ -92,24 +92,28 @@ function debounce(func: any, wait: number) {
 export default function TipTapEditor({ groupId }: { groupId: string }) {
   const [content, setContent] = useState(DEFAULT_BINDER_NOTE);
 
-  const onValueChange = useCallback(
-    debounce((value: any) => {
-      console.log("value", value);
-      setContent(value);
-    }, 1000),
-    [],
-  );
-
-  const { data: initialNoteBlock } = api.note.getNoteBlockByGroupId.useQuery({
-    groupId,
-  });
-
   const { mutate: updateNote, isPending } =
     api.note.updateNoteBlock.useMutation({
       onSuccess: () => {
         toast.success("Note block updated successfully!");
       },
     });
+
+  const onValueChange = useCallback(
+    debounce((value: string) => {
+      setContent(value); // keep local state in sync
+      updateNote({
+        groupId,
+        title: "note block",
+        content: value,
+      });
+    }, 1000),
+    [updateNote, groupId],
+  );
+
+  const { data: initialNoteBlock } = api.note.getNoteBlockByGroupId.useQuery({
+    groupId,
+  });
 
   useEffect(() => {
     if (initialNoteBlock) {
@@ -120,9 +124,9 @@ export default function TipTapEditor({ groupId }: { groupId: string }) {
   return (
     <section className="container mx-auto flex min-h-[600px] flex-col gap-4 p-4">
       <RichTextEditor
-        key={content}
+        key={initialNoteBlock?.id} // stable between keystrokes
         output="html"
-        content={content as any}
+        content={content}
         onChangeContent={onValueChange}
         extensions={extensions}
         dark
@@ -132,6 +136,7 @@ export default function TipTapEditor({ groupId }: { groupId: string }) {
           },
         }}
       />
+
       <div className="flex w-full justify-end">
         <Button
           onClick={() =>
