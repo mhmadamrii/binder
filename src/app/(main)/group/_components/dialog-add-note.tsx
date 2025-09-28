@@ -50,24 +50,6 @@ export function DialogAddNote({
 
   return (
     <Dialog open={isOpenCreateNote} onOpenChange={setIsOpenCreateNote}>
-      {!pathname.includes("notes") && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={() => setIsOpenCreateNote(true)}
-              size="sm"
-              variant="ghost"
-              className="hover:bg-secondary cursor-pointer"
-            >
-              <PlusCircle className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Add New Note</p>
-          </TooltipContent>
-        </Tooltip>
-      )}
-
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="mb-2 flex items-center">

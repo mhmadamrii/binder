@@ -54,7 +54,7 @@ export function CreateGroup({ open, onOpenChange }: CreateGroupModalProps) {
   const { mutate, isPending } = api.group.createGroup.useMutation({
     onSuccess: (res) => {
       toast.success("Group created successfully!");
-      router.push(`/group/${res[0]!.id}`);
+      router.push(`/group/${res.id}`);
     },
   });
 

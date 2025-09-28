@@ -25,6 +25,7 @@ import { Color } from "reactjs-tiptap-editor/lib/Color.js";
 import { TextAlign } from "reactjs-tiptap-editor/lib/TextAlign.js";
 import { TaskList } from "reactjs-tiptap-editor/lib/TaskList.js";
 import { api } from "~/trpc/react";
+import { Loader } from "lucide-react";
 
 const extensions = [
   BaseKit.configure({
@@ -57,9 +58,10 @@ const extensions = [
 ];
 
 export default function ReadOnlyEditor({ groupId }: { groupId: string }) {
-  const { data: initialNoteBlock } = api.note.getNoteBlockByGroupId.useQuery({
-    groupId,
-  });
+  const { data: initialNoteBlock, isLoading } =
+    api.note.getNoteBlockByGroupId.useQuery({
+      groupId,
+    });
 
   console.log("initialNoteBlock", initialNoteBlock);
 
@@ -73,22 +75,28 @@ export default function ReadOnlyEditor({ groupId }: { groupId: string }) {
 
   return (
     <section className="h-full">
-      <div className="editor-wrapper">
-        <RichTextEditor
-          // @ts-expect-error
-          editorRef={editorRef}
-          output="html"
-          content={initialNoteBlock?.content ?? DEFAULT_BINDER_NOTE}
-          extensions={extensions}
-          dark
-          disabled
-          toolbar={{
-            render(props, toolbarItems, dom, containerDom) {
-              return "";
-            },
-          }}
-        />
-      </div>
+      {isLoading ? (
+        <div className="flex h-[300px] w-full items-center justify-center">
+          <Loader className="animate-spin" />
+        </div>
+      ) : (
+        <div className="editor-wrapper">
+          <RichTextEditor
+            // @ts-expect-error
+            editorRef={editorRef}
+            output="html"
+            content={initialNoteBlock?.content ?? DEFAULT_BINDER_NOTE}
+            extensions={extensions}
+            dark
+            disabled
+            toolbar={{
+              render(props, toolbarItems, dom, containerDom) {
+                return "";
+              },
+            }}
+          />
+        </div>
+      )}
     </section>
   );
 }

@@ -137,11 +137,16 @@ export function GroupNotes({ groupId }: { groupId: string }) {
         </CardTitle>
       </CardHeader>
 
+      <DialogAddNote
+        isOpenCreateNote={isOpenCreateNote}
+        setIsOpenCreateNote={setIsOpenCreateNote}
+      />
+
       <CardContent className="px-2">
         {groupNotes?.length == 0 && (
           <div
             className={cn("py-8 text-center", {
-              hidden: isOpenCreateNote,
+              hidden: noteMode === "block",
             })}
           >
             <div className="bg-secondary/50 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
@@ -154,7 +159,7 @@ export function GroupNotes({ groupId }: { groupId: string }) {
             <Button
               onClick={() => setIsOpenCreateNote(true)}
               size="sm"
-              className="btn-hero"
+              className="btn-hero cursor-pointer"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Add First Note

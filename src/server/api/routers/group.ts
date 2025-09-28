@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { groupMembers, groups, users } from "~/server/db/schema";
+import { groupMembers, groups, noteBlocks, users } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { eq, sql } from "drizzle-orm";
 import { generateInviteCode } from "~/lib/utils";
+import { DEFAULT_BINDER_CREATION } from "~/lib/note-default";
 
 export const groupRouter = createTRPCRouter({
   getAllGroups: protectedProcedure.query(async ({ ctx }) => {
@@ -73,25 +74,33 @@ export const groupRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const newGroup = await ctx.db
-        .insert(groups)
-        .values({
-          name: input.name,
-          desc: input.description,
-          isPrivate: input.isPrivate,
-          ownerId: ctx.session.user.id,
-          inviteCode: generateInviteCode(12),
-        })
-        .returning({ id: groups.id });
+      return await ctx.db.transaction(async (tx) => {
+        const [newGroup] = await tx
+          .insert(groups)
+          .values({
+            name: input.name,
+            desc: input.description,
+            isPrivate: input.isPrivate,
+            ownerId: ctx.session.user.id,
+            inviteCode: generateInviteCode(12),
+          })
+          .returning({ id: groups.id });
 
-      if (newGroup) {
-        await ctx.db.insert(groupMembers).values({
+        if (!newGroup?.id) throw new Error("Failed to create group");
+
+        await tx.insert(groupMembers).values({
           userId: ctx.session.user.id,
-          groupId: newGroup[0]?.id ?? "",
+          groupId: newGroup.id,
         });
-      }
 
-      return newGroup;
+        await tx.insert(noteBlocks).values({
+          groupId: newGroup.id,
+          title: "new note",
+          content: DEFAULT_BINDER_CREATION,
+        });
+
+        return newGroup;
+      });
     }),
 
   getPublicGroups: protectedProcedure.query(async ({ ctx }) => {
