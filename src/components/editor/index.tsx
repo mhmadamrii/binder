@@ -91,6 +91,7 @@ function debounce(func: any, wait: number) {
 
 export default function TipTapEditor({ groupId }: { groupId: string }) {
   const [content, setContent] = useState(DEFAULT_BINDER_NOTE);
+  const [initialized, setInitialized] = useState(false);
 
   const { mutate: updateNote, isPending } =
     api.note.updateNoteBlock.useMutation({
@@ -101,14 +102,18 @@ export default function TipTapEditor({ groupId }: { groupId: string }) {
 
   const onValueChange = useCallback(
     debounce((value: string) => {
-      setContent(value); // keep local state in sync
-      updateNote({
-        groupId,
-        title: "note block",
-        content: value,
-      });
+      setContent(value);
+
+      // Only save if the editor is already initialized
+      if (initialized) {
+        updateNote({
+          groupId,
+          title: "note block",
+          content: value,
+        });
+      }
     }, 1000),
-    [updateNote, groupId],
+    [updateNote, groupId, initialized],
   );
 
   const { data: initialNoteBlock } = api.note.getNoteBlockByGroupId.useQuery({
@@ -118,9 +123,9 @@ export default function TipTapEditor({ groupId }: { groupId: string }) {
   useEffect(() => {
     if (initialNoteBlock) {
       setContent(initialNoteBlock.content);
+      setInitialized(true); // mark editor ready, next changes will trigger autosave
     }
   }, [initialNoteBlock]);
-
   return (
     <section className="container mx-auto flex min-h-[600px] flex-col gap-4 p-4">
       <RichTextEditor
