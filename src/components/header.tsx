@@ -1,11 +1,12 @@
 "use client";
 
-import { LogOut, Settings } from "lucide-react";
-import { Badge } from "~/components/ui/badge";
+import { Loader, LogOut } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { signOut } from "next-auth/react";
+import { useState } from "react";
 
 export function Header() {
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <header className="border-border bg-card/50 sticky top-0 z-50 border-b backdrop-blur-sm">
       <div className="px-4 py-4">
@@ -17,11 +18,20 @@ export function Header() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => signOut()}>
-              <LogOut className="h-4 w-4" />
+            <Button
+              className="cursor-pointer"
+              variant="secondary"
+              size="icon"
+              onClick={() => {
+                setIsLoading(true);
+                signOut();
+              }}
+            >
+              {isLoading ? (
+                <Loader className="animate-spin" />
+              ) : (
+                <LogOut className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>

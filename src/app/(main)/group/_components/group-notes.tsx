@@ -130,7 +130,7 @@ export function GroupNotes({ groupId }: { groupId: string }) {
                 </Link>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Show All Notes</p>
+                <p>Show Details</p>
               </TooltipContent>
             </Tooltip>
           </div>

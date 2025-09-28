@@ -215,4 +215,20 @@ export const groupRouter = createTRPCRouter({
         isJoined: !!existingMember,
       };
     }),
+
+  deleteGroup: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.delete(groups).where(eq(groups.id, input.id));
+      return { id: input.id };
+    }),
+
+  quitGroup: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(groupMembers)
+        .where(eq(groupMembers.groupId, input.id));
+      return { id: input.id };
+    }),
 });

@@ -43,7 +43,7 @@ export function CardMessageContent() {
         {
           id: -Math.round(Math.random() * 1000000),
           content: event.message.text,
-          sender: user?.name ?? "Anonymous",
+          sender: event.message.metadata.senderName as unknown as string,
           timestamp: "saving...",
           isOwn: event.message.metadata.senderId == user?.id,
         },
@@ -63,6 +63,7 @@ export function CardMessageContent() {
         metadata: {
           type: "text",
           senderId: user?.id,
+          senderName: user?.name,
         },
       });
       createMessage({
@@ -105,9 +106,6 @@ export function CardMessageContent() {
       <CardFooter>
         <form className="w-full p-4">
           <div className="flex items-center space-x-2">
-            <Button type="button" variant="ghost" size="sm">
-              <Paperclip className="h-4 w-4" />
-            </Button>
             <Input
               placeholder="Type a message..."
               value={newMessage}
