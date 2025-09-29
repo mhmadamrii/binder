@@ -34,11 +34,13 @@ export function InvitationModal({
   group,
 }: InvitationModalProps) {
   const router = useRouter();
+  const utils = api.useUtils();
 
   const { mutate, isPending } = api.group.addCurrentUserToGroup.useMutation({
     onSuccess: (res) => {
       router.push(`/group/${res.groupId}`);
       toast.success(`Successfully joined group ${group?.name}`);
+      void utils.group.getPublicGroups.invalidate();
     },
   });
   return (

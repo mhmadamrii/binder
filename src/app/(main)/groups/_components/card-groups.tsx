@@ -142,11 +142,13 @@ function RequestJoinModal({
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
+  const utils = api.useUtils();
 
   const { mutate, isPending } = api.group.addCurrentUserToGroup.useMutation({
     onSuccess: (res) => {
       router.push(`/group/${res.groupId}`);
       toast.success(`Successfully joined ${groupName}`);
+      void utils.group.getPublicGroups.invalidate();
     },
   });
 
