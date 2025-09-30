@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { groupMembers, groups, noteBlocks, users } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { generateInviteCode } from "~/lib/utils";
 import { DEFAULT_BINDER_CREATION } from "~/lib/note-default";
 
@@ -25,8 +25,15 @@ export const groupRouter = createTRPCRouter({
         ),
       })
       .from(groups)
-      .innerJoin(groupMembers, eq(groups.id, groupMembers.groupId))
-      .where(eq(groupMembers.userId, ctx.session.user.id))
+      .leftJoin(groupMembers, eq(groups.id, groupMembers.groupId))
+      .where(
+        sql`EXISTS (
+            SELECT 1
+            FROM ${groupMembers} gm
+            WHERE gm.group_id = ${groups.id}
+            AND gm.user_id = ${ctx.session.user.id}
+    )`,
+      )
       .groupBy(
         groups.id,
         groups.name,
@@ -136,8 +143,6 @@ export const groupRouter = createTRPCRouter({
         groups.createdAt,
       );
 
-    console.log("publicGroups", publicGroups);
-
     return publicGroups;
   }),
 
@@ -217,18 +222,36 @@ export const groupRouter = createTRPCRouter({
     }),
 
   deleteGroup: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ groupId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.delete(groups).where(eq(groups.id, input.id));
-      return { id: input.id };
+      await ctx.db.delete(groups).where(eq(groups.id, input.groupId));
+      return { id: input.groupId };
+    }),
+
+  isCurrentUserGroupOwner: protectedProcedure
+    .input(z.object({ groupId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const [group] = await ctx.db
+        .select({
+          id: groups.id,
+          ownerId: groups.ownerId,
+        })
+        .from(groups)
+        .where(eq(groups.id, input.groupId));
+
+      return group?.ownerId === ctx.session.user.id;
     }),
 
   quitGroup: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ groupId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
+      return await ctx.db
         .delete(groupMembers)
-        .where(eq(groupMembers.groupId, input.id));
-      return { id: input.id };
+        .where(
+          and(
+            eq(groupMembers.userId, ctx.session.user.id),
+            eq(groupMembers.groupId, input.groupId),
+          ),
+        );
     }),
 });

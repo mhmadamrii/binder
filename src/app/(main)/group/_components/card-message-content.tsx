@@ -1,5 +1,5 @@
 import { useMessages } from "@ably/chat/react";
-import { Paperclip, Send, Smile, Check, CheckCheck } from "lucide-react";
+import { Send, Smile, Check, CheckCheck } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { useEffect, useRef, useState } from "react";
@@ -9,6 +9,7 @@ import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { api } from "~/trpc/react";
+import { format } from "date-fns";
 
 export function CardMessageContent() {
   const params = useParams<{ id: string }>();
@@ -75,7 +76,6 @@ export function CardMessageContent() {
       console.error("error sending message", error);
     }
   };
-  console.log("previousMessages", previousMessages);
 
   const handleSetDefaultMessages = () => {
     if (!previousMessages) return [];
@@ -144,7 +144,8 @@ const MessageMeta = ({
   isOwn: boolean;
   timestamp: string;
 }) => {
-  const displayTime = timestamp === "saving..." ? "00:00" : timestamp;
+  const displayTime =
+    timestamp === "saving..." ? format(new Date(), "HH:mm") : timestamp;
   const Icon = isOwn && timestamp === "saving..." ? Check : CheckCheck;
 
   return (

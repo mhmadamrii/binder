@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, MessageCircle, Settings, Users } from "lucide-react";
+import { ChevronLeft, Users } from "lucide-react";
+import { GroupSettings } from "./group-setting";
 
 export function GroupHeader({
   groupName,
@@ -51,9 +52,7 @@ export function GroupHeader({
               <Users className="mr-1 h-3 w-3" />
               {membersCount} members
             </Badge>
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
-            </Button>
+            <GroupSettings />
           </div>
         </div>
       </div>
