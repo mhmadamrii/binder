@@ -12,6 +12,7 @@ import { Badge } from "~/components/ui/badge";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "~/components/ui/button";
 
 import {
   AlertDialog,
@@ -146,9 +147,10 @@ function RequestJoinModal({
 
   const { mutate, isPending } = api.group.addCurrentUserToGroup.useMutation({
     onSuccess: (res) => {
-      router.push(`/group/${res.groupId}`);
+      void utils.group.invalidate();
       toast.success(`Successfully joined ${groupName}`);
-      void utils.group.getPublicGroups.invalidate();
+      router.push(`/group/${res.groupId}`);
+      router.refresh();
     },
   });
 
@@ -183,11 +185,12 @@ function RequestJoinModal({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+          <Button
+            className="w-[80px] cursor-pointer"
             onClick={() => mutate({ groupId: selectedGroupId })}
           >
             {isPending ? <Loader className="animate-spin" /> : "Join"}
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
