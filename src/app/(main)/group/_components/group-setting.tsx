@@ -26,16 +26,16 @@ export function GroupSettings() {
   const { mutate: quitGroup } = api.group.quitGroup.useMutation({
     onSuccess: (res) => {
       toast.success("You have successfully quit the group");
-      router.refresh();
       router.push("/groups");
+      router.refresh();
     },
   });
 
   const { mutate: deleteGroup } = api.group.deleteGroup.useMutation({
     onSuccess: (res) => {
       toast.success("You have successfully delete the group");
-      router.refresh();
       router.push("/groups");
+      router.refresh();
     },
   });
 
