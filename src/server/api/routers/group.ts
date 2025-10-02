@@ -254,4 +254,21 @@ export const groupRouter = createTRPCRouter({
           ),
         );
     }),
+
+  checkIsMember: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const member = await ctx.db
+        .select()
+        .from(groupMembers)
+        .where(
+          and(
+            eq(groupMembers.groupId, input.id),
+            eq(groupMembers.userId, ctx.session.user.id),
+          ),
+        )
+        .limit(1);
+
+      return { isMember: member.length > 0 };
+    }),
 });

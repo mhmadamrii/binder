@@ -30,9 +30,6 @@ export function GroupHeader({
             </Link>
 
             <div className="flex items-center space-x-3">
-              {/* <div className="from-primary to-primary-glow flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br">
-                <MessageCircle className="h-5 w-5 text-white" />
-              </div> */}
               <div className="flex flex-col gap-0">
                 <span className="text-foreground text-xl font-bold">
                   {groupName || "-"}

@@ -7,9 +7,17 @@ import { GroupMessage } from "../_components/group-message";
 import { GroupMember } from "../_components/group-member";
 import { Suspense } from "react";
 import { GroupByIdSkeleton } from "../_components/group-byid-skeleton";
+import { redirect } from "next/navigation";
 
 async function GroupByIdWithData({ id }: { id: string }) {
-  const [data] = await Promise.all([await api.group.getGroupById({ id })]);
+  const [data, { isMember }] = await Promise.all([
+    await api.group.getGroupById({ id }),
+    await api.group.checkIsMember({ id }),
+  ]);
+
+  if (!isMember) {
+    redirect("/groups");
+  }
   return (
     <>
       <GroupHeader
