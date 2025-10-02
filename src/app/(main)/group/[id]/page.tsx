@@ -16,7 +16,7 @@ async function GroupByIdWithData({ id }: { id: string }) {
   ]);
 
   if (!isMember) {
-    redirect("/groups");
+    // redirect("/groups");
   }
   return (
     <>
