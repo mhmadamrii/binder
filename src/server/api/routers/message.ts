@@ -12,7 +12,8 @@ export const messageRouter = createTRPCRouter({
         .select()
         .from(messages)
         .innerJoin(users, eq(messages.senderId, users.id))
-        .where(and(eq(messages.groupId, input.groupId)));
+        .where(and(eq(messages.groupId, input.groupId)))
+        .orderBy(messages.createdAt);
 
       return prevMessages.map((m) => ({
         id: m.messages.id,
