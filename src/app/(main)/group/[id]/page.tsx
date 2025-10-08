@@ -16,7 +16,7 @@ async function GroupByIdWithData({ id }: { id: string }) {
   ]);
 
   if (!isMember) {
-    redirect("/groups");
+    return <h1>Group not found for id {id}</h1>;
   }
   return (
     <>
