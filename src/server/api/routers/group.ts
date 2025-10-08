@@ -72,6 +72,46 @@ export const groupRouter = createTRPCRouter({
       };
     }),
 
+  // createGroup: protectedProcedure
+  //   .input(
+  //     z.object({
+  //       name: z.string().min(1),
+  //       description: z.string().min(1),
+  //       isPrivate: z.boolean(),
+  //     }),
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     return await ctx.db.transaction(async (tx) => {
+  //       const [newGroup] = await tx
+  //         .insert(groups)
+  //         .values({
+  //           name: input.name,
+  //           desc: input.description,
+  //           isPrivate: input.isPrivate,
+  //           ownerId: ctx.session.user.id,
+  //           inviteCode: generateInviteCode(12),
+  //         })
+  //         .returning({ id: groups.id });
+
+  //       if (!newGroup?.id) throw new Error("Failed to create group");
+
+  //       await tx.insert(groupMembers).values({
+  //         userId: ctx.session.user.id,
+  //         groupId: newGroup.id,
+  //       });
+
+  //       await tx.insert(noteBlocks).values({
+  //         groupId: newGroup.id,
+  //         title: "new note",
+  //         content: DEFAULT_BINDER_CREATION,
+  //       });
+
+  //       console.log("new group [TRANSACTION]", newGroup);
+
+  //       return newGroup;
+  //     });
+  //   }),
+
   createGroup: protectedProcedure
     .input(
       z.object({
@@ -81,34 +121,82 @@ export const groupRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const traceId = crypto.randomUUID(); // to correlate multi-step logs
+      const startTime = Date.now();
+
+      console.log(
+        `[TRACE ${traceId}] [START] createGroup invoked by user=${userId}`,
+      );
+
       return await ctx.db.transaction(async (tx) => {
-        const [newGroup] = await tx
-          .insert(groups)
-          .values({
-            name: input.name,
-            desc: input.description,
-            isPrivate: input.isPrivate,
-            ownerId: ctx.session.user.id,
-            inviteCode: generateInviteCode(12),
-          })
-          .returning({ id: groups.id });
+        try {
+          console.log(`[TRACE ${traceId}] [TX START] Beginning DB transaction`);
 
-        if (!newGroup?.id) throw new Error("Failed to create group");
+          // Step 1: Insert new group
+          console.log(
+            `[TRACE ${traceId}] [INSERT GROUP] Inserting group with name="${input.name}"`,
+          );
+          const [newGroup] = await tx
+            .insert(groups)
+            .values({
+              name: input.name,
+              desc: input.description,
+              isPrivate: input.isPrivate,
+              ownerId: userId,
+              inviteCode: generateInviteCode(12),
+            })
+            .returning({ id: groups.id });
 
-        await tx.insert(groupMembers).values({
-          userId: ctx.session.user.id,
-          groupId: newGroup.id,
-        });
+          console.log(
+            `[TRACE ${traceId}] [INSERT GROUP DONE] Result:`,
+            newGroup,
+          );
 
-        await tx.insert(noteBlocks).values({
-          groupId: newGroup.id,
-          title: "new note",
-          content: DEFAULT_BINDER_CREATION,
-        });
+          if (!newGroup?.id) {
+            console.error(`[TRACE ${traceId}] [ERROR] Failed to insert group`);
+            throw new Error("Failed to create group");
+          }
 
-        console.log("new group [TRANSACTION]", newGroup);
+          // Step 2: Insert group member (creator)
+          console.log(
+            `[TRACE ${traceId}] [INSERT MEMBER] Adding owner as member groupId=${newGroup.id}`,
+          );
+          await tx.insert(groupMembers).values({
+            userId,
+            groupId: newGroup.id,
+          });
+          console.log(
+            `[TRACE ${traceId}] [INSERT MEMBER DONE] userId=${userId}`,
+          );
 
-        return newGroup;
+          // Step 3: Insert default note block
+          console.log(
+            `[TRACE ${traceId}] [INSERT NOTE] Creating default note block for groupId=${newGroup.id}`,
+          );
+          await tx.insert(noteBlocks).values({
+            groupId: newGroup.id,
+            title: "new note",
+            content: DEFAULT_BINDER_CREATION,
+          });
+          console.log(`[TRACE ${traceId}] [INSERT NOTE DONE]`);
+
+          // Step 4: Commit and return
+          console.log(
+            `[TRACE ${traceId}] [TX SUCCESS] Transaction completed successfully`,
+          );
+          console.log(
+            `[TRACE ${traceId}] [END] Duration: ${Date.now() - startTime}ms`,
+          );
+
+          return newGroup;
+        } catch (err) {
+          console.error(
+            `[TRACE ${traceId}] [TX ERROR] Transaction failed:`,
+            err,
+          );
+          throw err; // Rethrow to let TRPC handle
+        }
       });
     }),
 
