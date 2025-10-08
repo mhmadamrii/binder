@@ -41,6 +41,7 @@ const formSchema = z.object({
 });
 
 export function CreateGroup({ open, onOpenChange }: CreateGroupModalProps) {
+  const utils = api.useUtils();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,6 +56,7 @@ export function CreateGroup({ open, onOpenChange }: CreateGroupModalProps) {
     onSuccess: (res) => {
       toast.success("Group created successfully!");
       router.push(`/group/${res.id}`);
+      void utils.group.invalidate();
     },
   });
 
