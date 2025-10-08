@@ -56,6 +56,7 @@ export function CreateGroup({ open, onOpenChange }: CreateGroupModalProps) {
     onSuccess: (res) => {
       toast.success("Group created successfully!");
       router.push(`/group/${res.id}`);
+      utils.group.invalidate();
       router.refresh();
     },
   });

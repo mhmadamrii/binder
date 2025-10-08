@@ -106,6 +106,8 @@ export const groupRouter = createTRPCRouter({
           content: DEFAULT_BINDER_CREATION,
         });
 
+        console.log("new group [TRANSACTION]", newGroup);
+
         return newGroup;
       });
     }),

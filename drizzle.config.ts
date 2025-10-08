@@ -8,6 +8,7 @@ export default {
   dialect: "postgresql",
   dbCredentials: {
     url: env.DATABASE_URL,
+    ssl: false,
   },
   // tablesFilter: ["binder_*"],
 } satisfies Config;
