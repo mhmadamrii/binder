@@ -7,7 +7,6 @@ export default async function MainLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  console.log("session", session);
   if (!session) {
     redirect("/");
   }
