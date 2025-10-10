@@ -87,3 +87,5 @@ To run this project, you will need to add the following environment variables to
 - `AUTH_GITHUB_ID`: Your GitHub application ID for GitHub authentication.
 - `AUTH_GITHUB_SECRET`: Your GitHub application secret for GitHub authentication.
 - `ABLY_API_KEY`: Your Ably API key for real-time messaging.
+
+
